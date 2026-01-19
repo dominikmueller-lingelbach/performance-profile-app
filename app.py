@@ -19,7 +19,10 @@ from db import init_db, save_report, load_report
 # ============================================================
 BREVO_API_KEY = os.getenv("BREVO_API_KEY")
 BREVO_LIST_ID = int(os.getenv("BREVO_LIST_ID", "3"))
-BASE_URL = os.getenv("BASE_URL", "http://127.0.0.1:8000").rstrip("/")
+PUBLIC_BASE_URL = os.getenv(
+    "PUBLIC_BASE_URL",
+    "http://127.0.0.1:8000"
+).rstrip("/")
 
 
 # ============================================================
@@ -106,7 +109,7 @@ async def submit(request: Request):
     result = build_report_data(answers)
 
     report_id = str(uuid4())
-    result_url = f"{BASE_URL}/r/{report_id}"
+    result_url = f"{PUBLIC_BASE_URL}/r/{report_id}"
 
     # ================== REPORT SPEICHERN ==================
     save_report(report_id, {
