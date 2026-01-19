@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Dein Ergebnis – Performance Profil</title>
+
+  <style>
+    /* ===== Base ===== */
+    body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial;background:#0b0f14;color:#eaf0f6;}
+    .wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;}
+    .card{width:min(980px,100%);background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:18px;padding:26px;}
+
+    .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:12px}
+    .brand{font-weight:800;opacity:.95}
+    .tag{opacity:.75;max-width:55%;text-align:right;word-break:break-word}
+
+    h1{font-size:28px;margin:10px 0 6px}
+    .sub{opacity:.75;margin:0 0 18px;line-height:1.35}
+
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
+    .panel{padding:16px;border-radius:14px;border:1px solid rgba(255,255,255,0.10);background:rgba(0,0,0,0.20)}
+    .muted{opacity:.7}
+    .kpi{font-size:34px;font-weight:900;line-height:1.05;margin:6px 0 6px}
+
+    .badge{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:10px;
+      background:rgba(34,197,94,0.12);border:1px solid rgba(34,197,94,0.25);color:#bff3cf;font-weight:900;margin-right:10px}
+
+    .tiny{opacity:.78;font-size:13px;line-height:1.35;margin-top:8px}
+    .hintbox{border-left:3px solid rgba(34,197,94,0.55);padding-left:10px}
+
+    /* ===== Lists ===== */
+    .list{margin:10px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:10px}
+    .item{display:flex;justify-content:space-between;gap:10px;border:1px solid rgba(255,255,255,0.10);background:rgba(255,255,255,0.05);padding:10px 12px;border-radius:12px}
+    .item b{font-weight:800}
+    .pct{opacity:.85;font-weight:800}
+
+    /* ===== Bars ===== */
+    .barrow{margin:10px 0}
+    .barlabel{display:flex;justify-content:space-between;font-size:13px;opacity:.9}
+    .bar{height:14px;border-radius:999px;background:rgba(255,255,255,0.10);overflow:hidden;margin-top:6px}
+    .fill{height:100%;width:0%;background:#22c55e;border-radius:999px}
+
+    /* ===== Meaning Cards ===== */
+    .meaning-grid{display:grid;grid-template-columns:1fr;gap:10px}
+    .meaning-card{padding:14px;border-radius:14px;border:1px solid rgba(255,255,255,0.10);background:rgba(255,255,255,0.04)}
+    .meaning-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:6px}
+    .label{font-weight:900;opacity:.85;font-size:13px}
+    .meaning-title{font-weight:900;font-size:18px;margin:2px 0 6px}
+    .meaning-text{opacity:.92;line-height:1.35}
+    .steer{margin-top:8px;opacity:.78;font-size:13px;line-height:1.35}
+
+    /* ===== Actions ===== */
+    .actions{display:flex;gap:12px;margin-top:16px}
+    button{flex:1;padding:14px;border-radius:12px;border:0;font-weight:800;cursor:pointer}
+    .btn{background:#22c55e;color:#05210f}
+    .btn2{background:rgba(255,255,255,0.10);color:#fff}
+
+    /* ===== LEFT TYPE PANEL POLISH ===== */
+    .type-panel{
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      min-height:260px;
+    }
+    .type-head{display:flex;align-items:flex-start;gap:12px;margin-top:12px}
+    .type-title{font-size:42px;line-height:1.05;margin:2px 0 8px;letter-spacing:-0.3px}
+    .type-hook{font-size:16px;line-height:1.35;opacity:.9;margin-top:2px}
+    .type-divider{height:1px;background:rgba(255,255,255,0.10);margin:14px 0 12px}
+    .type-callout{
+      border-left:4px solid rgba(34,197,94,0.70);
+      padding:12px;
+      background:rgba(255,255,255,0.05);
+      border:1px solid rgba(255,255,255,0.10);
+      border-radius:12px;
+    }
+    .type-callout strong{display:block;font-size:14px;letter-spacing:.2px;margin-bottom:6px;opacity:.95}
+    .type-callout .tiny{font-size:14px;line-height:1.45;opacity:.92;margin:0}
+
+    @media(max-width:900px){
+      .grid{grid-template-columns:1fr}
+      .type-title{font-size:36px;}
+      .tag{max-width:100%;text-align:left;margin-top:6px}
+    }
+
+    /* =========================
+       PRINT / PDF MODE (STABIL)
+       ========================= */
+    @media print {
+      @page { size: A4; margin: 18mm 16mm; }
+
+      html, body{
+        background:#fff !important;
+        color:#111 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      .wrap{
+        padding:0 !important;
+        min-height:auto !important;
+        display:block !important;
+      }
+
+      .card{
+        width:100% !important;
+        border:none !important;
+        background:#fff !important;
+        padding:0 !important;
+        box-shadow:none !important;
+        border-radius:0 !important;
+      }
+
+      .top{
+        display:block !important;
+        margin-bottom:10px !important;
+      }
+      .tag{
+        font-size:11px !important;
+        max-width:100% !important;
+        text-align:left !important;
+        white-space:normal !important;
+        word-break:break-word !important;
+      }
+
+      .panel, .meaning-card, .item{
+        background:#fff !important;
+        border:1px solid #ddd !important;
+        break-inside: avoid !important;
+        page-break-inside: avoid !important;
+      }
+
+      .muted, .sub, .tiny, .label, .pct{
+        color:#333 !important;
+        opacity:1 !important;
+      }
+      h1, .kpi, .meaning-title, .brand, b{
+        color:#111 !important;
+      }
+
+      .badge{
+        background:#e9f7ef !important;
+        border:1px solid #22c55e !important;
+        color:#0b5d2a !important;
+      }
+
+      .bar{ background:#eee !important; }
+      .fill{ background:#22c55e !important; }
+
+      .actions, button{ display:none !important; }
+
+      .grid{ grid-template-columns:1fr !important; }
+
+      *{ overflow:visible !important; }
+    }
+  </style>
+</head>
+
+<body>
+<div class="wrap">
+  <div class="card">
+    <div class="top">
+      <div class="brand">Performance Profil</div>
+      <div class="tag" id="who"></div>
+    </div>
+
+    <h1 id="headline">Ergebnis wird geladen…</h1>
+    <p class="sub" id="subline"></p>
+
+    <div class="grid">
+      <!-- LEFT: Typ -->
+      <div class="panel type-panel">
+        <div class="muted">Dein Arbeitsmodus (Typ)</div>
+
+        <div class="type-head">
+          <div class="badge" id="ptypeLetter">–</div>
+          <div style="flex:1">
+            <div class="type-title" id="ptypeName">–</div>
+            <div class="type-hook" id="ptypeHint">–</div>
+          </div>
+        </div>
+
+        <div class="type-divider"></div>
+
+        <div class="type-callout">
+          <strong id="ptypeLabel">—</strong>
+          <p class="tiny" id="ptypeExplain" style="margin:0"></p>
+        </div>
+      </div>
+
+      <!-- RIGHT: Top-3 + Bottom-2 -->
+      <div class="panel">
+        <div class="muted">Deine stärksten Hebel (Top 3)</div>
+        <ul class="list" id="top3list"></ul>
+
+        <div style="height:10px"></div>
+
+        <div class="muted">Deine Reibungszonen (2 niedrigste)</div>
+        <ul class="list" id="bottom2list"></ul>
+
+        <div class="tiny" style="margin-top:10px">
+          Hinweis: Es geht nicht darum, überall „hoch“ zu sein. Es geht darum zu wissen, <b>wo du Leistung holst</b> und <b>wo Reibung entsteht</b> – damit du gezielt steuerst.
+        </div>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-top:14px">
+      <div class="muted" style="margin-bottom:10px">Dein Profil (Bar Chart)</div>
+      <div id="bars"></div>
+    </div>
+
+    <div class="panel" style="margin-top:14px">
+      <div class="muted" style="margin-bottom:10px">Was das konkret bedeutet</div>
+      <div class="meaning-grid" id="meaningGrid"></div>
+      <div class="tiny" style="margin-top:10px;opacity:.8">
+        Merksatz: Deine Top-Hebel sind deine stärksten Wirkungen. Deine Reibungszonen sind die Stellen, wo du <b>unnötig Leistung verlierst</b> – beides ist steuerbar.
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn2" onclick="restart()">Test neu starten</button>
+      <button class="btn" onclick="nextStep()">Report erstellen (PDF folgt)</button>
+    </div>
+
+    <p class="muted" style="margin-top:12px;font-size:13px">
+      Hinweis: Wenn du hier „nichts“ siehst, wurde kein Ergebnis gespeichert. Dann starte den Test neu.
+    </p>
+  </div>
+</div>
+
+<!-- ✅ SERVER-DATEN AUS SQLITE (kommt aus app.py: {"data": payload}) -->
+<script>
+  window.__PP_DATA__ = {{ data | tojson }};
+</script>
+
+<script>
+  function restart(){
+    localStorage.removeItem("pp_result");
+    window.location.href = "/";
+  }
+
+  // ✅ PDF: nutzt primär Server-Daten (DB), fallback localStorage
+  function nextStep(){
+    let data = window.__PP_DATA__;
+    if(!data){
+      const raw = localStorage.getItem("pp_result");
+      if(raw){
+        try { data = JSON.parse(raw); } catch(e) { data = null; }
+      }
+    }
+    if(!data || !data.report_id){ alert("report_id fehlt. Bitte Test neu starten."); return; }
+    window.location.href = `/report/${data.report_id}.pdf`;
+  }
+
+  function normalizeRanked(ranked){
+    if(!ranked) return [];
+    if(Array.isArray(ranked)) return ranked;
+    if(typeof ranked === "object"){
+      return Object.entries(ranked).map(([k,v]) => [k, Number(v)]);
+    }
+    return [];
+  }
+
+  // ====== Namen der 11 Funktionen (IDs -> Klartext)
+  const FUNCTION_NAMES = {
+    "DST":"Leistungsmodus unter Belastung",
+    "STR":"Entscheidungsstabilität & Ordnung",
+    "MAC":"Verantwortungs- & Einflussorientierung",
+    "KON":"Soziale Steuerung & Anschlussfähigkeit",
+    "MOR":"Werte-Stabilität & innere Entscheidungsgrenzen",
+    "IND":"Autonomie- & Gestaltungsmodus",
+    "AKT":"Energie- & Handlungsdynamik",
+    "INF":"Verarbeitungs- & Entscheidungsmodus",
+    "COM":"Vergleichs- & Leistungsreferenz",
+    "AUF":"Sichtbarkeits- & Feedbackabhängigkeit",
+    "STA":"Positions- & Anerkennungsorientierung"
+  };
+
+  // ====== Bedeutungen: Top vs. Reibungszone + Steuerung (dein ORIGINAL)
+  const FUNCTION_TEXT = {
+    "DST": {
+      top:   "Du kannst unter Druck Leistung abrufen, Prioritäten setzen und handlungsfähig bleiben – das ist ein echter Peak-Hebel, wenn es zählt.",
+      low:   "Wenn der Druck steigt, sinkt dein Zugriff schneller: Fokus bricht, Entscheidungen werden schwerer oder du gehst in Vermeidung – Leistung wird inkonsistent.",
+      steer: "Steuerung: Druck bewusst dosieren, klare Belastungs-/Erholungsphasen, kurze klare Prioritäten (1–3)."
+    },
+    "STR": {
+      top:   "Klare Ordnung stabilisiert dich: Abläufe, Prioritäten und Zuständigkeiten geben Ruhe – du bleibst sauber und zuverlässig, auch wenn es unruhig wird.",
+      low:   "Ohne Struktur verlierst du unnötig Leistung: Chaos, Unklarheit und wechselnde Prioritäten kosten Energie und erhöhen Fehlerquote.",
+      steer: "Steuerung: klare Standards + feste Routinen + Zuständigkeiten schriftlich (wer entscheidet was)."
+    },
+    "MAC": {
+      top:   "Du nimmst Verantwortung und Einfluss aktiv – du gehst voran, entscheidest, steuerst. Das ist ein Leadership-Hebel in Leistungssystemen.",
+      low:   "Du wartest eher auf Vorgaben: Verantwortung bleibt diffus, Einfluss wird verschenkt – dadurch entstehen Verzögerung, Unklarheit und weniger Ownership.",
+      steer: "Steuerung: Verantwortung klar definieren (Scope), Entscheidungsspielräume festlegen, Ownership trainieren."
+    },
+    "KON": {
+      top:   "Austausch und soziale Rückkopplung erhöhen deine Leistung: du wirst klarer, stabiler und abrufbarer durch Kommunikation und Sparring.",
+      low:   "Ohne sozialen Anschluss kippt Leistung schneller: du isolierst dich, verlierst Feedback-Klarheit oder Energie – Entscheidungen werden enger.",
+      steer: "Steuerung: Kommunikationsdichte bewusst festlegen (z.B. 1 Sparring-Slot/Tag oder/Woche)."
+    },
+    "MOR": {
+      top:   "Werte geben dir innere Ruhe und Richtung: du entscheidest klarer, wenn es zu deinen Prinzipien passt – Integrität wird zur Leistungskraft.",
+      low:   "Wertekonflikte kosten Leistung: innere Unruhe, Grübeln oder inkonsistente Entscheidungen – Energie geht in Konflikt statt in Umsetzung.",
+      steer: "Steuerung: 3 Kernwerte definieren + No-Go-Liste; Konflikte früh benennen statt wegdrücken."
+    },
+    "IND": {
+      top:   "Freiheit erzeugt Performance: wenn du gestalten darfst, lieferst du kreative Lösungen, Eigenständigkeit und hohen Output.",
+      low:   "Zu wenig Autonomie drückt Leistung: du wirst passiver, wartest eher ab oder lieferst „Dienst nach Vorschrift“ statt echten Impact.",
+      steer: "Steuerung: Freiheitsgrade klar definieren (Ziel klar, Weg offen) – aber Outcome messbar machen."
+    },
+    "AKT": {
+      top:   "Tempo ist dein Motor: du kommst ins Tun, erzeugst Momentum und ziehst Umsetzung durch – Entscheidung folgt oft aus Handlung.",
+      low:   "Wenn Dynamik fehlt, wird’s zäh: du bleibst zu lange im Kopf, wartest ab oder kommst schwer in Umsetzung – Leistung startet zu spät.",
+      steer: "Steuerung: Start-Ritual (5 Minuten), kleine erste Schritte, Timeboxing statt Perfektion."
+    },
+    "INF": {
+      top:   "Du lieferst über Verständnis: wenn du Zusammenhänge siehst, triffst du bessere Entscheidungen und bleibst stabil – auch unter Druck.",
+      low:   "Bei zu wenig Klarheit wird’s wacklig: du zögerst, entscheidest zu intuitiv oder verhedderst dich – Risiko: Fehlgriffe oder Overthinking.",
+      steer: "Steuerung: 2–3 Pflichtinfos pro Entscheidung; Informationsmenge bewusst begrenzen oder erhöhen."
+    },
+    "COM": {
+      top:   "Wettbewerb und Benchmarks pushen dich: du hebst Standards, erhöhst Intensität und gehst in den Leistungsmodus, wenn es messbar wird.",
+      low:   "Ohne Vergleich fehlt der externe Push: du bleibst eher in Komfort oder Standards sind zu weich – Performance wird weniger „scharf“.",
+      steer: "Steuerung: klare Referenzen setzen (KPIs/Benchmarks), aber Vergleich kontrolliert und konstruktiv nutzen."
+    },
+    "AUF": {
+      top:   "Feedback und Sichtbarkeit stabilisieren deine Leistung: du ziehst Energie aus Rückmeldung und kannst dadurch konsequent abrufen.",
+      low:   "Ohne Feedback verlierst du Orientierung: du unterkommunizierst, wirst unsichtbar oder holst dir keine Korrektur – Leistung wird weniger präzise.",
+      steer: "Steuerung: Feedbackfrequenz definieren (z.B. 1 Review/Woche), aktiv einfordern statt hoffen."
+    },
+    "STA": {
+      top:   "Rolle und Position setzen Energie frei: klare Stellung gibt Sicherheit – du zeigst Leistung sichtbarer und mit mehr Anspruch.",
+      low:   "Wenn Rolle/Status unklar ist, entsteht Reibung: du bleibst zu unsichtbar oder nimmst weniger Raum ein – Leistung wird nicht „abgerufen“.",
+      steer: "Steuerung: Rolle klar definieren, Sichtbarkeit gezielt steuern (nicht Ego, sondern Wirkung)."
+    }
+  };
+
+  // ====== Typen (Arbeitsmodi) + Label
+  const TYPE_MAP = {
+    "A": {name:"Stabilitätsmodus", label:"Fundament-Performer", hint:"Du lieferst, wenn Rahmen & Standards klar sind.", explain:"ruhig, zuverlässig, präzise. Führung: klare Rahmen, keine künstliche Hektik."},
+    "B": {name:"Druckmodus", label:"Peak-Performer", hint:"Je höher der Druck, desto besser – wenn du ihn steuerst.", explain:"Hochfokussiert in kritischen Momenten. Führung: Druck dosieren + klare Regeln + Regeneration."},
+    "C": {name:"Gestaltungsmodus", label:"Lösungs- & Konzeptmodus", hint:"Freiheit erzeugt Leistung. Ziele ja – Detailsteuerung nein.", explain:"Kreativ, konzeptionell, lösungsorientiert. Führung: Ziel klar, Weg offen. Ergebnis zählt, nicht die Methode."},
+    "D": {name:"Vergleichsmodus", label:"Ambitions-Performer", hint:"Leistung entsteht im Wettbewerb, Standards und Feedback.", explain:"Leistungsgetrieben, benchmark-orientiert, ambitioniert. Führung: Maßstäbe sauber setzen, Feedback sachlich, Vergleich kontrollieren."},
+    "E": {name:"Kontrollmodus", label:"Steuerungs-Performer", hint:"Du performst maximal, wenn Verantwortung klar bei dir liegt.", explain:"Übernimmt Verantwortung, denkt steuernd, behält Überblick. Führung: Verantwortung abgrenzen, Delegation trainieren, Ergebnisverantwortung statt Detailkontrolle."}
+  };
+
+  function renderMeaning(ranked){
+    const sorted = (ranked || []).slice().sort((a,b)=>Number(b[1]) - Number(a[1]));
+    const top = sorted.slice(0,3);
+    const low = sorted.slice(-2).reverse();
+
+    const grid = document.getElementById("meaningGrid");
+    grid.innerHTML = "";
+
+    function addCard(kind, fid, pct){
+      const name = FUNCTION_NAMES[fid] || fid;
+      const t = FUNCTION_TEXT[fid] || {};
+      const label = kind === "top" ? "Top-Hebel" : "Reibungszone";
+      const text = kind === "top" ? (t.top || "") : (t.low || "");
+      const steer = (t.steer || "").replace(/^Steuerung:\s*/,"");
+
+      const div = document.createElement("div");
+      div.className = "meaning-card";
+      div.innerHTML = `
+        <div class="meaning-head">
+          <div class="label">${label}</div>
+          <div class="label">${pct}%</div>
+        </div>
+        <div class="meaning-title">${name}</div>
+        <div class="meaning-text">${text || "—"}</div>
+        <div class="steer"><b>Steuerung:</b> ${steer || "—"}</div>
+      `;
+      grid.appendChild(div);
+    }
+
+    top.forEach(([fid,pct]) => addCard("top", fid, pct));
+    low.forEach(([fid,pct]) => addCard("low", fid, pct));
+  }
+
+  // ====== MAIN (NEU: DB/Server zuerst, localStorage nur Fallback)
+  let data = window.__PP_DATA__;
+
+  if(!data){
+    const raw = localStorage.getItem("pp_result");
+    if(raw){
+      try { data = JSON.parse(raw); } catch(e) { data = null; }
+    }
+  }
+
+  if(!data){
+    document.getElementById("headline").textContent = "Kein Ergebnis gefunden.";
+    document.getElementById("subline").textContent = "Bitte starte den Test neu.";
+  } else {
+    // Bonus: localStorage aktualisieren (nicht Pflicht, aber praktisch)
+    try { localStorage.setItem("pp_result", JSON.stringify(data)); } catch(e) {}
+
+    // Kopf
+    const who = [];
+    if(data.name) who.push(data.name);
+    if(data.email) who.push(data.email);
+    document.getElementById("who").textContent = who.join(" · ");
+
+    document.getElementById("headline").textContent = "Dein Ergebnis ist da.";
+    document.getElementById("subline").innerHTML =
+      "Du siehst jetzt nicht „wer du bist“, sondern <b>wie du unter Druck funktionierst</b> – und wie du das steuerst.";
+
+    // Typ
+    const letter = (data.profile_type || "–").toString().trim();
+    const t = TYPE_MAP[letter];
+    document.getElementById("ptypeLetter").textContent = letter || "–";
+    document.getElementById("ptypeName").textContent = t ? t.name : (letter || "–");
+    document.getElementById("ptypeHint").textContent = t ? t.hint : "–";
+    document.getElementById("ptypeExplain").textContent = t ? t.explain : "";
+    document.getElementById("ptypeLabel").textContent = t ? t.label : "—";
+
+    // Ranked
+    const ranked = normalizeRanked(data.ranked).slice().sort((a,b)=>Number(b[1]) - Number(a[1]));
+
+    // Top-3 List
+    const top3 = ranked.slice(0,3);
+    const top3list = document.getElementById("top3list");
+    top3list.innerHTML = "";
+    top3.forEach(([fid, pct]) => {
+      const li = document.createElement("li");
+      li.className = "item";
+      li.innerHTML = `<b>${FUNCTION_NAMES[fid] || fid}</b><span class="pct">${pct}%</span>`;
+      top3list.appendChild(li);
+    });
+
+    // Bottom-2 List
+    const bottom2 = ranked.slice(-2).reverse();
+    const bottom2list = document.getElementById("bottom2list");
+    bottom2list.innerHTML = "";
+    bottom2.forEach(([fid, pct]) => {
+      const li = document.createElement("li");
+      li.className = "item";
+      li.innerHTML = `<b>${FUNCTION_NAMES[fid] || fid}</b><span class="pct">${pct}%</span>`;
+      bottom2list.appendChild(li);
+    });
+
+    // Bars
+    const bars = document.getElementById("bars");
+    bars.innerHTML = "";
+    ranked.forEach(([fid, pct]) => {
+      const name = FUNCTION_NAMES[fid] || fid;
+      const row = document.createElement("div");
+      row.className = "barrow";
+      row.innerHTML = `
+        <div class="barlabel"><span>${name}</span><span>${pct}%</span></div>
+        <div class="bar"><div class="fill" style="width:${pct}%;"></div></div>
+      `;
+      bars.appendChild(row);
+    });
+
+    // Meaning cards
+    renderMeaning(ranked);
+  }
+</script>
+
+</body>
+</html>

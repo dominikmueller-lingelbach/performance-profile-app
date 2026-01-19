@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Performance Profil – Test</title>
+
+  <style>
+    body{
+      margin:0;
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial;
+      background:#0b0f14;
+      color:#eaf0f6;
+    }
+
+    .wrap{
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:24px;
+      box-sizing:border-box;
+    }
+
+    .card{
+      width:min(920px,100%);
+      background:rgba(255,255,255,0.06);
+      border:1px solid rgba(255,255,255,0.12);
+      border-radius:18px;
+      padding:26px;
+      box-sizing:border-box; /* saubere Ränder/Abstände */
+    }
+
+    .top{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin-bottom:16px;
+    }
+
+    .brand{font-weight:700;opacity:.9}
+    .progress{opacity:.7}
+
+    h1{font-size:26px;margin:10px 0 6px}
+    .sub{opacity:.75;margin-bottom:18px}
+
+    /* Name/Email sauber, keine Überschneidung */
+    .grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:12px;
+      margin-bottom:12px;
+    }
+    .email{
+      width:100%;
+      display:block;
+      margin-bottom:18px;
+    }
+
+    input{
+      width:100%;
+      padding:12px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,0.16);
+      background:rgba(0,0,0,0.18);
+      color:#fff;
+      box-sizing:border-box;
+    }
+
+    .q{
+      display:none;
+      margin-top:14px;
+      padding:18px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,0.10);
+      background:rgba(0,0,0,0.20);
+      box-sizing:border-box;
+      overflow:hidden; /* verhindert Überstand im Block */
+    }
+    .q.active{display:block}
+
+    .qtext{font-size:18px;margin-bottom:12px}
+
+    .scale{
+      display:flex;
+      justify-content:space-between;
+      font-size:12px;
+      opacity:.7;
+      margin:8px 0;
+    }
+
+    /* Slider-Linie + Thumb innerhalb des Blocks halten */
+    input[type="range"]{
+      width:100%;
+      display:block;
+      margin:0;
+      box-sizing:border-box;
+    }
+
+    .actions{
+      display:flex;
+      gap:12px;
+      margin-top:18px;
+    }
+
+    button{
+      flex:1;
+      padding:14px;
+      border-radius:12px;
+      border:0;
+      font-weight:700;
+      cursor:pointer;
+    }
+
+    .btn{background:#22c55e;color:#05210f}
+    .btn2{background:rgba(255,255,255,0.10);color:#fff}
+
+    .hint{opacity:.7;font-size:13px;margin-top:12px}
+
+    @media(max-width:720px){
+      .grid{grid-template-columns:1fr}
+      .wrap{padding:16px}
+      .card{padding:20px}
+    }
+  </style>
+</head>
+
+<body>
+<div class="wrap">
+  <div class="card">
+
+    <div class="top">
+      <div class="brand">Performance Profil</div>
+      <div class="progress" id="progress">1 / {{ questions|length }}</div>
+    </div>
+
+    <h1>Dein Test. Deine Klarheit. Deine Performance.</h1>
+    <p class="sub">Ehrlich antworten. Nicht „wie du sein willst“, sondern wie du wirklich funktionierst.</p>
+
+    <form id="form" onsubmit="return false;">
+
+      <!-- Vorname + Nachname -->
+      <div class="grid">
+        <input id="first_name" placeholder="Vorname" autocomplete="given-name">
+        <input id="last_name" placeholder="Nachname" autocomplete="family-name">
+      </div>
+
+      <!-- E-Mail darunter, voller Abstand -->
+      <input id="email" class="email" placeholder="E-Mail" type="email" autocomplete="email">
+
+      {% for q in questions %}
+      <div class="q">
+        <p class="qtext">{{ q.text }}</p>
+
+        <div style="font-size:40px;font-weight:800">
+          <span id="val_{{ q.id }}">5</span>/10
+        </div>
+
+        <div class="scale">
+          <span>0 = trifft gar nicht zu</span>
+          <span>10 = trifft voll zu</span>
+        </div>
+
+        <input type="range" min="0" max="10" value="5"
+               data-id="{{ q.id }}"
+               oninput="document.getElementById('val_{{ q.id }}').innerText=this.value;">
+      </div>
+      {% endfor %}
+
+      <div class="actions">
+        <button type="button" class="btn2" id="prevBtn">Zurück</button>
+        <button type="button" class="btn" id="nextBtn">Weiter</button>
+      </div>
+
+      <div class="hint">Tipp: Wenn du „perfekt“ antwortest, betrügst du nur dich selbst.</div>
+    </form>
+
+  </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  try {
+    const blocks = Array.from(document.querySelectorAll(".q"));
+    const total = blocks.length;
+
+    const progressEl = document.getElementById("progress");
+    const prevBtn = document.getElementById("prevBtn");
+    const nextBtn = document.getElementById("nextBtn");
+
+    const firstEl = document.getElementById("first_name");
+    const lastEl  = document.getElementById("last_name");
+    const emailEl = document.getElementById("email");
+
+    let step = 0;
+
+    function show() {
+      // Wenn keine Fragen da sind: UI sauber anzeigen + Button blocken
+      if (total === 0) {
+        if (progressEl) progressEl.innerText = "0 / 0";
+        if (nextBtn) {
+          nextBtn.disabled = true;
+          nextBtn.style.opacity = "0.55";
+          nextBtn.style.cursor = "not-allowed";
+          nextBtn.innerText = "Keine Fragen geladen";
+        }
+        if (prevBtn) {
+          prevBtn.disabled = true;
+          prevBtn.style.opacity = "0.55";
+          prevBtn.style.cursor = "not-allowed";
+        }
+        return;
+      }
+
+      blocks.forEach((b, i) => b.classList.toggle("active", i === step));
+      if (progressEl) progressEl.innerText = (step + 1) + " / " + total;
+
+      // Prev nur ab Schritt 1
+      prevBtn.disabled = (step === 0);
+      prevBtn.style.opacity = (step === 0) ? "0.55" : "1";
+      prevBtn.style.cursor = (step === 0) ? "not-allowed" : "pointer";
+    }
+
+    function collectAnswers() {
+      const data = {};
+      blocks.forEach(block => {
+        const slider = block.querySelector('input[type="range"]');
+        if (slider && slider.dataset && slider.dataset.id) {
+          data[slider.dataset.id] = String(slider.value);
+        }
+      });
+      return data;
+    }
+
+    function validateStartFields() {
+      const first = (firstEl?.value || "").trim();
+      const last  = (lastEl?.value || "").trim();
+      const email = (emailEl?.value || "").trim();
+
+      if (!first || !last || !email) {
+        alert("Bitte Vorname, Nachname und E-Mail-Adresse eingeben.");
+        return null;
+      }
+      return { first, last, email };
+    }
+
+    nextBtn.addEventListener("click", () => {
+      // Wenn Fragen fehlen: klare Meldung
+      if (total === 0) {
+        alert("Fehler: Es wurden keine Fragen geladen. Bitte Server/Template prüfen (questions leer).");
+        return;
+      }
+
+      const user = validateStartFields();
+      if (!user) return;
+
+      if (step < total - 1) {
+        step++;
+        show();
+      } else {
+        fetch("/submit", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: user.first + " " + user.last,
+            email: user.email,
+            answers: collectAnswers()
+          })
+        })
+        .then(r => r.json())
+        .then(data => {
+          if (!data.ok) {
+            alert(data.error || "Fehler beim Absenden");
+            return;
+          }
+
+          data.result_url = `/r/${data.report_id}`;
+          localStorage.setItem("pp_result", JSON.stringify(data));
+          window.location.href = data.result_url;
+        })
+        .catch(err => {
+          console.error(err);
+          alert("Netzwerkfehler beim Absenden. Bitte Console prüfen.");
+        });
+      }
+    });
+
+    prevBtn.addEventListener("click", () => {
+      if (total === 0) return;
+      if (step > 0) {
+        step--;
+        show();
+      }
+    });
+
+    show();
+  } catch (e) {
+    console.error(e);
+    alert("JavaScript-Fehler im Test. Bitte Console öffnen (F12) und Fehlermeldung schicken.");
+  }
+});
+</script>
+
+</body>
+</html>
