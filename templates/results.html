@@ -265,23 +265,38 @@
   // low: <25 | mid: <75 | high: >=75
   function bandOf(pct){
     const p = Number(pct);
-    if(p < 25) return "low";
-    if(p < 75) return "mid";
-    return "high";
+    if(p >= 75) return "high";
+    if(p < 25)  return "low";
+    return "mid";
   }
 
   function pickLowText(card, pct){
     // wie im PDF: lowA wenn <25, sonst lowB
-    if(!card) return "—";
-    return (Number(pct) < 25) ? (card.lowA || "—") : (card.lowB || "—");
+    if(!card) return "-";
+    return (Number(pct) < 25) ? (card.lowA || "-") : (card.lowB || "-");
+  }
+
+  function firstSentence(t){
+    if(!t) return "";
+    const m = t.match(/^(.+?[.!?])\s/);
+    return m ? m[1] : t;
+  }
+
+  function pickShortText(card, pct){
+    // Kurzer Text für die kleinen Kästen oben (1–2 Sätze)
+    if(!card) return "";
+    const p = Number(pct);
+    if(p >= 75) return card.short_top  || firstSentence(card.top)  || "";
+    if(p < 25)  return card.short_lowA || firstSentence(card.lowA) || "";
+    return        card.short_lowB || firstSentence(card.lowB) || "";
   }
 
   function pickSteer(card, pct){
-    if(!card) return "—";
+    if(!card) return "-";
     const b = bandOf(pct);
-    if(b === "high") return card.steer_high || "—";
-    if(b === "mid")  return card.steer_mid  || "—";
-    return card.steer_low || "—";
+    if(b === "high") return card.steer_high || "-";
+    if(b === "mid")  return card.steer_mid  || "-";
+    return card.steer_low || "-";
   }
 
   function renderMeaningCards(top3, bottom2, FUNCTION_NAMES, MEANING_CARDS){
@@ -293,7 +308,9 @@
       const card = MEANING_CARDS ? MEANING_CARDS[fid] : null;
 
       const label = (kind === "top") ? "Top-Hebel" : "Reibungszone";
-      const text  = (kind === "top") ? ((card && card.top) ? card.top : "—") : pickLowText(card, pct);
+      const text  = (kind === "top")
+        ? pickShortText(card, pct)
+        : pickLowText(card, pct);
       const steer = pickSteer(card, pct);
 
       const div = document.createElement("div");
@@ -409,23 +426,28 @@
       top3list.appendChild(li);
     });
 
-    // Bottom-2 List (Text kommt aus MEANING_CARDS lowA/lowB = identisch zum PDF)
-    const bottom2list = document.getElementById("bottom2list");
-    bottom2list.innerHTML = "";
+    // Bottom-2 List (Reibungszonen – kurze Orientierungstexte)
+    const bottom2List = document.getElementById("bottom2list");
+    bottom2List.innerHTML = "";
+
     bottom2.forEach(it => {
       const card = MEANING_CARDS[it.fid] || null;
-      const sub  = pickLowText(card, it.percent);
+
+      // nutzt bestehende Logik (lowA / lowB anhand Prozent)
+      const sub = pickShortText(card, it.percent);
 
       const li = document.createElement("li");
       li.className = "item";
+
       li.innerHTML = `
         <div style="flex:1">
-          <b>${it.name || (FUNCTION_NAMES[it.fid] || it.fid)}</b>
+          <b>${FUNCTION_NAMES[it.fid] || it.fid}</b>
           <div class="subitem">${sub}</div>
         </div>
         <span class="pct">${it.percent}%</span>
-      `;
-      bottom2list.appendChild(li);
+  `    ;
+
+      bottom2List.appendChild(li);
     });
 
     // Bars

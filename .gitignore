@@ -5,3 +5,4 @@ __pycache__/
 .DS_Store
 outputs/
 *.pdf
+data/reports.db

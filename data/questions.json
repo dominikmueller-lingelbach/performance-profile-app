@@ -15,12 +15,12 @@
   {"id":"q13","text":"Ich halte meine Zusagen ein – auch wenn es mich etwas kostet.","function_id":"MOR","function_name":"Werte-Stabilität & innere Entscheidungsgrenzen"},
   {"id":"q14","text":"Ich informiere mich regelmäßig, um in Entscheidungen überlegen zu sein.","function_id":"INF","function_name":"Verarbeitungs- & Entscheidungsmodus"},
 
-  {"id":"q15","text":"Ich baue schnell Rapport auf und kann Menschen für mich gewinnen.","function_id":"KON","function_name":"Soziale Steuerung & Anschlussfähigkeit"},
+  {"id":"q15","text":"Ich baue schnell eine vertrauensvolle Verbindung auf und kann Menschen für mich gewinnen.","function_id":"KON","function_name":"Soziale Steuerung & Anschlussfähigkeit"},
   {"id":"q16","text":"Ich performe besonders gut, wenn andere auch Druck haben.","function_id":"DST","function_name":"Leistungsmodus unter Belastung"},
   {"id":"q17","text":"Ich brauche Struktur, sonst verliere ich unnötig Leistung.","function_id":"STR","function_name":"Entscheidungsstabilität & Ordnung"},
   {"id":"q18","text":"Ich handle lieber, als zu lange zu diskutieren oder zu grübeln.","function_id":"AKT","function_name":"Energie- & Handlungsdynamik"},
   {"id":"q19","text":"Ich will Top-Ergebnisse – Mittelmaß interessiert mich nicht.","function_id":"COM","function_name":"Vergleichs- & Leistungsreferenz"},
-  {"id":"q20","text":"Ich spiele fair und sauber, auch wenn ich dadurch kurzfristig Nachteile hätte.","function_id":"MOR","function_name":"Werte-Stabilität & innere Entscheidungsgrenzen"},
+  {"id":"q20","text":"Ich handle fair und sauber, auch wenn ich dadurch kurzfristig Nachteile hätte.","function_id":"MOR","function_name":"Werte-Stabilität & innere Entscheidungsgrenzen"},
   {"id":"q21","text":"Ich lerne schnell, weil ich systematisch Wissen sammle und anwende.","function_id":"INF","function_name":"Verarbeitungs- & Entscheidungsmodus"},
 
   {"id":"q22","text":"Ich fühle mich unwohl, wenn ich alleine arbeite und keiner im Austausch ist.","function_id":"KON","function_name":"Soziale Steuerung & Anschlussfähigkeit"},

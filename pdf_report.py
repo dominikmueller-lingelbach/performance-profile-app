@@ -777,7 +777,10 @@ MEANING_CARDS = {
         "lowB": "In vielen Situationen funktioniert es – aber unter bestimmten Triggern (Zeitdruck, Bewertung, Erwartung) kippt der Zugriff. Reibung entsteht nicht, weil du ‘besser werden musst’, sondern weil du Druck anders dosieren musst als dein Umfeld.",
         "steer_high": "Druck dosieren: klare ‘High-Pressure’-Fenster + bewusste Regeneration. Nicht dauerhaft auf Anschlag.",
         "steer_mid": "Trigger kennen: Welche Druckart kippt dich? Dann Vorab-Standard setzen (1–3 Prioritäten, klare nächste Aktion).",
-        "steer_low": "Druck entkoppeln: kurze Handlungsschritte, feste Routinen, klare Grenzen. Leistung über Struktur statt Stress erzeugen."
+        "steer_low": "Druck entkoppeln: kurze Handlungsschritte, feste Routinen, klare Grenzen. Leistung über Struktur statt Stress erzeugen.",
+        "short_top": "Unter Druck bleibt dein Zugriff da: Fokus, Entscheidung, Handlung. Das ist ein echter Leistungsvorteil, wenn es zählt.",
+        "short_lowA": "Unter Druck kippt der Zugriff schnell: Fokus bricht, Entscheidungen werden zäh, Tempo geht verloren. Genau hier entsteht Reibung.",
+        "short_lowB": "Meist funktioniert es – aber bestimmte Trigger (Zeitdruck, Bewertung, Erwartung) ziehen dir den Zugriff. Reibung entsteht situativ, nicht grundsätzlich." 
     },
     "STR": {
         "top": "Ordnung gibt dir Zugriff: klare Abläufe, Prioritäten, Zuständigkeiten. Du bleibst sauber und zuverlässig, wenn andere chaotisch werden.",
@@ -785,7 +788,10 @@ MEANING_CARDS = {
         "lowB": "Du kannst Struktur – aber sie ist nicht dein Standard. Reibung entsteht, wenn Umfeld ‘System’ erwartet und du es situativ erst bauen musst. Dann geht Energie in Sortieren statt in Liefern.",
         "steer_high": "Nicht übersteuern: Struktur als Rahmen nutzen, nicht als Käfig. Fokus auf wenige Standards, die wirklich Output sichern.",
         "steer_mid": "Minimal-Standards setzen: 3 Prioritäten, 1 Entscheidungsregel, 1 Abschluss-Review. Stabilität ohne Overhead.",
-        "steer_low": "Kompensieren statt verbiegen: externe Struktur nutzen (Templates, Checklisten, klare Zuständigkeiten). System entlastet Kopf."
+        "steer_low": "Kompensieren statt verbiegen: externe Struktur nutzen (Templates, Checklisten, klare Zuständigkeiten). System entlastet Kopf.",
+        "short_top":  "Struktur gibt dir Zugriff: du priorisierst sauber und bleibst stabil, wenn andere in Chaos kippen.",
+        "short_lowA": "Unordnung kostet dich Leistung: zu viel im Kopf, zähe Entscheidungen, unnötiger Energieverlust. Hier entsteht klare Reibung.",
+        "short_lowB": "Du kannst Struktur, aber sie greift nicht automatisch. Unter Druck verlierst du Zeit durch Sortieren statt durch Liefern."
     },
     "MAC": {
         "top": "Du nimmst Verantwortung aktiv: du steuerst, entscheidest, gehst voran. Das ist Leadership-Power in Leistungssystemen.",
@@ -793,7 +799,10 @@ MEANING_CARDS = {
         "lowB": "Du übernimmst Verantwortung, wenn Rahmen klar ist – aber nicht automatisch. Reibung entsteht, wenn Leadership ‘implizit’ erwartet wird, ohne dass du Mandat oder Grenze hast.",
         "steer_high": "Delegation aktiv trainieren: Verantwortung ja – aber nicht alles selbst. Ergebnisverantwortung statt Detailkontrolle.",
         "steer_mid": "Mandat klären: Was ist dein Verantwortungsrahmen? Welche Entscheidungen gehören dir? Dann handeln, bevor es ‘dringend’ wird.",
-        "steer_low": "Verantwortung strukturiert holen: klare Aufgabenpakete, klare Entscheidungspunkte. Ohne Mandat keine saubere Verantwortung."
+        "steer_low": "Verantwortung strukturiert holen: klare Aufgabenpakete, klare Entscheidungspunkte. Ohne Mandat keine saubere Verantwortung.",
+        "short_top":  "Du übernimmst Verantwortung aktiv: du steuerst, entscheidest und gehst voran. Das erzeugt Wirkung und Verlässlichkeit.",
+        "short_lowA": "Verantwortung landet zu oft nicht klar bei dir: Entscheidungen bleiben hängen, Einfluss wird verschenkt. Das erzeugt Reibung im System.",
+        "short_lowB": "Du übernimmst Verantwortung, wenn der Rahmen klar ist. Wird Führung stillschweigend erwartet, entsteht Reibung durch Unklarheit."
     },
     "KON": {
         "top": "Soziale Rückkopplung stärkt dich: Austausch macht dich klarer, stabiler, abrufbarer. Du performst besser über Sparring.",
@@ -801,7 +810,10 @@ MEANING_CARDS = {
         "lowB": "Kontakt funktioniert – aber nicht immer. Reibung entsteht, wenn zu viel Austausch deinen Fokus zerfranst oder wenn du zu spät kommunizierst und dann ‘Reparaturmodus’ brauchst.",
         "steer_high": "Input führen: Sparring gezielt nutzen, nicht jedem Feedback die Führung geben. Standard: feste Slots, klare Fragen.",
         "steer_mid": "Kontakt dosieren: in kritischen Phasen Sparring aktivieren, sonst Fokus schützen. Rhythmus statt Bauchgefühl.",
-        "steer_low": "Kompensieren: 1 fester Feedback-Kanal + kurze Status-Updates. Du bleibst autonom – aber nicht blind."
+        "steer_low": "Kompensieren: 1 fester Feedback-Kanal + kurze Status-Updates. Du bleibst autonom – aber nicht blind.",
+        "short_top":  "Austausch macht dich klarer: du nutzt Rückkopplung als Hebel und wirst darüber stabiler und abrufbarer.",
+        "short_lowA": "Du bist sehr autonom. Reibung entsteht, wenn dadurch Korrektur fehlt oder du zu unsichtbar bleibst, obwohl du Leistung bringst.",
+        "short_lowB": "Kontakt hilft, aber nicht immer. Zu viel Austausch zerfasert Fokus – zu wenig Kommunikation führt später zu unnötigem Reparieren."
     },
     "MOR": {
         "top": "Werte geben dir Stabilität: du entscheidest klarer, wenn es zu deinen Prinzipien passt. Integrität wird zu Leistungskraft.",
@@ -809,7 +821,10 @@ MEANING_CARDS = {
         "lowB": "Du hast Werte – aber sie sind situativ. Reibung entsteht, wenn Umfeld klare Kante erwartet und du innerlich noch abwägst. Dann verlierst du Zeit, Fokus und Ruhe.",
         "steer_high": "Nicht dogmatisch werden: Werte als Leitplanke nutzen, nicht als Starrheit. Klar + flexibel in Umsetzung bleiben.",
         "steer_mid": "No-Go-Liste schärfen: 3 Werte + 3 Grenzen. Entscheidungen werden schneller, weil Diskussion wegfällt.",
-        "steer_low": "Kompensieren: externe Kriterien nutzen (Regeln, Prinzipien, Entscheidungsfragen). Linie bauen, ohne dich zu ‘verändern’."
+        "steer_low": "Kompensieren: externe Kriterien nutzen (Regeln, Prinzipien, Entscheidungsfragen). Linie bauen, ohne dich zu ‘verändern’.",
+        "short_top":  "Deine Werte stabilisieren Entscheidungen: du hast eine klare innere Linie, die unter Druck trägt.",
+        "short_lowA": "Weiche Grenzen erzeugen inneren Lärm: Grübeln, Unruhe, inkonsistente Entscheidungen. Genau das kostet Leistung.",
+        "short_lowB": "Du hast Werte, aber sie greifen nicht immer automatisch. Wenn klare Kante erwartet wird, entsteht Reibung durch Abwägen."
     },
     "IND": {
         "top": "Autonomie setzt Leistung frei: wenn du gestalten darfst, lieferst du kreativen Output, Eigenständigkeit und Lösungen.",
@@ -817,7 +832,10 @@ MEANING_CARDS = {
         "lowB": "Du kannst Freiheit nutzen – aber sie muss geführt sein. Reibung entsteht, wenn entweder zu eng kontrolliert wird oder Ziele zu diffus sind und du dann keinen klaren Zugriff hast.",
         "steer_high": "Ergebnis klar halten: Ziel messbar, Weg frei. Nicht in Chaos kippen – Autonomie braucht Richtung.",
         "steer_mid": "Leitplanken definieren: 2–3 Regeln, dann gestalten. Freiheit in Zeitfenster einteilen, nicht grenzenlos.",
-        "steer_low": "Kompensieren: klare Vorgaben + kleine Freiheitsfenster. Du performst über Rahmen – nutze ihn bewusst."
+        "steer_low": "Kompensieren: klare Vorgaben + kleine Freiheitsfenster. Du performst über Rahmen – nutze ihn bewusst.",
+        "short_top":  "Autonomie setzt Leistung frei: Gestaltungsspielraum macht dich produktiv, lösungsorientiert und wirksam.",
+        "short_lowA": "Zu wenig Autonomie zieht Energie: du wirst passiver oder lieferst unter Wert. Reibung entsteht durch zu starre Vorgaben.",
+        "short_lowB": "Freiheit funktioniert, wenn sie geführt ist. Ohne klare Ziele oder bei zu enger Kontrolle entsteht Reibung durch fehlenden Zugriff."
     },
     "AKT": {
         "top": "Tempo ist dein Motor: du kommst ins Tun, erzeugst Momentum, ziehst Umsetzung durch. Entscheidung folgt oft aus Handlung.",
@@ -825,7 +843,10 @@ MEANING_CARDS = {
         "lowB": "Du kannst schnell sein – aber nicht konstant. Reibung entsteht, wenn du zwischen Sprint und Stillstand wechselst und dadurch Rhythmus verlierst.",
         "steer_high": "Push & Brake steuern: Tempo bewusst setzen – und bewusst stoppen, bevor es hektisch wird.",
         "steer_mid": "Rhythmus bauen: Start-Ritual + Timeboxing. Stabilität schlägt ‘Motivation’.",
-        "steer_low": "Kompensieren: kleinster Schritt sofort (5-Minuten-Start). Output über Mini-Aktionen statt ‘große Energie’."
+        "steer_low": "Kompensieren: kleinster Schritt sofort (5-Minuten-Start). Output über Mini-Aktionen statt ‘große Energie’.",
+        "short_top":  "Tempo ist dein Motor: du kommst ins Tun, baust Momentum auf und ziehst Umsetzung durch.",
+        "short_lowA": "Der Start ist zäh: du bleibst zu lange im Kopf und kommst zu spät in Handlung. Reibung entsteht, wenn Tempo gefordert ist.",
+        "short_lowB": "Du kannst Tempo, aber nicht konstant. Reibung entsteht durch Wechsel zwischen Sprint und Stillstand – Rhythmus geht verloren."
     },
     "INF": {
         "top": "Verstehen stabilisiert dich: du siehst Zusammenhänge, triffst bessere Entscheidungen, bleibst ruhiger – auch unter Druck.",
@@ -833,7 +854,10 @@ MEANING_CARDS = {
         "lowB": "Du kannst analysieren – aber situativ. Reibung entsteht, wenn du entweder zu viel Info sammelst oder zu schnell entscheidest, je nach Druck.",
         "steer_high": "Analyse begrenzen: ‘genug Klarheit’ definieren, dann entscheiden. Sonst wird Verständnis zur Bremse.",
         "steer_mid": "2–3 Pflichtinfos pro Entscheidung. Wenn sie da sind: Go. Wenn nicht: bewusst Risiko markieren.",
-        "steer_low": "Kompensieren: Entscheidung über klare Heuristiken (Checkfragen). Minimum-Info sichern, dann handeln."
+        "steer_low": "Kompensieren: Entscheidung über klare Heuristiken (Checkfragen). Minimum-Info sichern, dann handeln.",
+        "short_top":  "Verstehen gibt dir Zugriff: du erkennst Muster, triffst bessere Entscheidungen und bleibst auch unter Druck stabil.",
+        "short_lowA": "Zu wenig Klarheit macht Entscheidungen wacklig: Zögern oder zu schnelle Intuition. Reibung entsteht bei hoher Komplexität.",
+        "short_lowB": "Du kannst analysieren, aber situativ. Unter Druck kippst du entweder in Überanalyse oder in zu schnelle Entscheidungen."
     },
     "COM": {
         "top": "Vergleich schärft dich: Benchmarks pushen Standards, Intensität steigt, du gehst in Leistungsmodus, wenn es messbar wird.",
@@ -841,7 +865,10 @@ MEANING_CARDS = {
         "lowB": "Vergleich kann pushen – aber nicht immer. Reibung entsteht, wenn Benchmarks mal antreiben, mal ablenken, weil der Maßstab nicht sauber geführt ist.",
         "steer_high": "Vergleich kontrollieren: Benchmarks als Tool nutzen, nicht als emotionale Steuerung. Fokus bleibt bei Output.",
         "steer_mid": "Phasenweise messen: Sprint-Phasen mit Benchmarks, dazwischen Stabilitätsmodus ohne Dauervergleich.",
-        "steer_low": "Kompensieren: eigene Standards setzen (KPI / Zielkriterien). Externe Reibung bewusst hinzufügen – dosiert."
+        "steer_low": "Kompensieren: eigene Standards setzen (KPI / Zielkriterien). Externe Reibung bewusst hinzufügen – dosiert.",
+        "short_top":  "Vergleich schärft dich: messbare Standards pushen Leistung, Fokus und Intensität steigen.",
+        "short_lowA": "Ohne Vergleich fehlt oft Reibung von außen: Standards bleiben weicher, Intensität steigt weniger. Das kann Leistung kosten.",
+        "short_lowB": "Vergleich kann pushen oder ablenken. Wenn Maßstäbe nicht sauber geführt sind, entsteht Reibung durch inkonsistente Orientierung."
     },
     "AUF": {
         "top": "Sichtbarkeit & Feedback können dich stabilisieren: Resonanz gibt Richtung und verstärkt Abrufbarkeit – wenn du sie führst.",
@@ -849,7 +876,10 @@ MEANING_CARDS = {
         "lowB": "Du kannst Feedback nutzen, willst aber nicht abhängig sein. Reibung entsteht, wenn Umfeld dauernd Rückmeldung will oder Sichtbarkeit erwartet – und du das als Energieverlust erlebst.",
         "steer_high": "Feedback führen: klare Kanäle, klare Kriterien. Resonanz nutzen, ohne von Bewertung abhängig zu werden.",
         "steer_mid": "Feedback zuschalten: nur in kritischen Phasen aktiv einholen, sonst intern steuern und Fokus schützen.",
-        "steer_low": "Kompensieren: Sichtbarkeit funktional machen (kurzes Ergebnis-Log). Kein ‘Feedback suchen’, sondern Wirkung dokumentieren."
+        "steer_low": "Kompensieren: Sichtbarkeit funktional machen (kurzes Ergebnis-Log). Kein ‘Feedback suchen’, sondern Wirkung dokumentieren.",
+        "short_top":  "Feedback kann dich stabilisieren: Resonanz gibt Richtung und erhöht Abrufbarkeit – wenn du sie bewusst führst.",
+        "short_lowA": "Du brauchst wenig Feedback. Reibung entsteht, wenn du dadurch zu unsichtbar wirst oder Wirkung nicht abgerufen wird.",
+        "short_lowB": "Du nutzt Feedback, willst aber nicht abhängig sein. Reibung entsteht, wenn Umfeld Dauer-Resonanz fordert oder Sichtbarkeit erwartet."
     },
     "STA": {
         "top": "Rolle/Position geben dir Zugriff: klare Stellung erhöht Präsenz, Anspruch und sichtbare Leistung – wenn du es funktional nutzt.",
@@ -857,7 +887,10 @@ MEANING_CARDS = {
         "lowB": "Rolle hilft, aber ist nicht dein Motor. Reibung entsteht, wenn Umfeld Statusspiele spielt oder klare Positionierung verlangt und du dich dadurch eingeengt fühlst.",
         "steer_high": "Status funktional halten: Rolle = Verantwortung, nicht Ego. Präsenz ja – aber ohne Dominanz-Spielchen.",
         "steer_mid": "Rolle bewusst klären: ‘Wofür stehe ich hier?’ Dann gezielt Raum nehmen, ohne dich zu verbiegen.",
-        "steer_low": "Kompensieren: Wirkung sichtbar machen (Beitrag/Ergebnis). Raum nehmen als Pflicht zur Verantwortung, nicht als Selbstdarstellung."
+        "steer_low": "Kompensieren: Wirkung sichtbar machen (Beitrag/Ergebnis). Raum nehmen als Pflicht zur Verantwortung, nicht als Selbstdarstellung.",
+        "short_top":  "Rolle und Position geben dir Zugriff: klare Stellung erhöht Präsenz, Anspruch und sichtbare Leistung.",
+        "short_lowA": "Status triggert dich wenig. Reibung entsteht, wenn du dadurch zu wenig Raum nimmst und Wirkung unter Wert bleibt.",
+        "short_lowB": "Rolle hilft, aber ist nicht dein Motor. Reibung entsteht bei Statusspielen oder wenn klare Positionierung dich einengt."
     },
 }
 
