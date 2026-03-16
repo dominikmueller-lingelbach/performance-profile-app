@@ -256,19 +256,19 @@ def _page_1_sog(name: str, email: str, styles):
     story.append(_box("Wie du diesen Report liest", [
         Paragraph("Nicht wie einen Text – sondern wie einen Spiegel.", styles["P"]),
         Spacer(1, 4),
-        Paragraph("<b>Wichtig: Es geht nicht darum, überall „hoch" zu erreichen.</b>", styles["P"]),
+        Paragraph("<b>Wichtig: Es geht nicht darum, überall HOCH zu erreichen.</b>", styles["P"]),
         Paragraph("Dieses Profil zeigt deine individuelle Leistungsarchitektur – nicht einen Idealzustand, den du erreichen musst. Jede Ausprägung hat eine Funktion. Niedrig ist nicht schlecht. Hoch ist nicht automatisch gut. Entscheidend ist, dass du erkennst, wie du unter Druck funktionierst – und wie du das gezielt für dich nutzt.", styles["P"]),
         Spacer(1, 4),
         Paragraph("In jeder Kategorie findest du drei Bereiche (hoch/mittel/niedrig).", styles["P"]),
         Paragraph("Dein Bereich ist markiert (grüner Rahmen). Die anderen beiden dienen als Kontext – damit du verstehst, wie Leistung entsteht oder kippt.", styles["P"]),
         Spacer(1, 4),
-        Paragraph("Wenn du an mehreren Stellen denkst: <b>„Verdammt – das bin genau ich"</b> → dann funktioniert dieser Report.", styles["P"]),
+        Paragraph("Wenn du an mehreren Stellen denkst: <b>Verdammt - das bin genau ich</b> → dann funktioniert dieser Report.", styles["P"]),
         Paragraph("Wenn du Widerstand spürst → dann triffst du gerade auf deine Reibung.", styles["P"]),
         Spacer(1, 4),
         Paragraph("Beides ist wertvoll. Beides ist steuerbar.", styles["P"]),
     ], styles))
     story.append(Spacer(1, 6))
-    story.append(Paragraph("„Leistung ist kein Zufall. Sie entsteht dort, wo Klarheit, Steuerung und Verantwortung zusammenkommen."", styles["Quote"]))
+    story.append(Paragraph("Leistung ist kein Zufall. Sie entsteht dort, wo Klarheit, Steuerung und Verantwortung zusammenkommen.", styles["Quote"]))
     return story
 
 def _page_2_web_snapshot(name: str, email: str, ptype: str, top3, bottom2, styles):
@@ -276,7 +276,7 @@ def _page_2_web_snapshot(name: str, email: str, ptype: str, top3, bottom2, style
     story.append(_topline_brand(name, email, styles))
     story.append(Spacer(1, 6))
     story.append(Paragraph("Dein Ergebnis ist da.", styles["H0"]))
-    story.append(Paragraph("Du siehst nicht „wer du bist", sondern <b>wie du unter Druck funktionierst</b> – und wie du das steuerst.", styles["Muted"]))
+    story.append(Paragraph("Du siehst nicht wer du bist, sondern <b>wie du unter Druck funktionierst</b> – und wie du das steuerst.", styles["Muted"]))
     story.append(Spacer(1, 6))
     t = TYPE_MAP.get(ptype, None) or {"name": f"Typ {ptype}", "label": "—", "hint": "—", "explain": "—"}
     type_head = Table([
@@ -307,7 +307,7 @@ def _page_2_web_snapshot(name: str, email: str, ptype: str, top3, bottom2, style
         Spacer(1, 6),
         _list_block("Deine Reibungszonen (2 niedrigste)", bottom2, styles),
         Spacer(1, 6),
-        Paragraph("Hinweis: Es geht nicht darum, überall „hoch" zu sein. Entscheidend ist, dass du weißt, <b>wo du Leistung holst</b> und <b>wo Reibung entsteht</b> – damit du gezielt steuerst.", styles["Muted"])
+        Paragraph("Hinweis: Es geht nicht darum, überall HOCH zu sein. Entscheidend ist, dass du weißt, <b>wo du Leistung holst</b> und <b>wo Reibung entsteht</b> – damit du gezielt steuerst.", styles["Muted"])
     ], styles)
     grid = Table([[left, "", right]], colWidths=[86*mm, 6*mm, None])
     grid.setStyle(TableStyle([
@@ -366,7 +366,7 @@ def _page_3_bar_overview(ranked, styles):
     story.append(_box("Dein Profil", [tbl], styles))
     story.append(Spacer(1, 6))
     story.append(_box("Einordnung der Prozentwerte", [
-        Paragraph("<b>0–25 %:</b> niedrig ausgeprägt – das bedeutet nicht „schlecht". Es zeigt, dass dieser Bereich unter Druck weniger Zugriff liefert. Hier lohnt es sich, gezielt zu steuern.", styles["P"]),
+        Paragraph("<b>0–25 %:</b> niedrig ausgeprägt – das bedeutet nicht schlecht. Es zeigt, dass dieser Bereich unter Druck weniger Zugriff liefert. Hier lohnt es sich, gezielt zu steuern.", styles["P"]),
         Spacer(1, 2),
         Paragraph("<b>25–75 %:</b> mittel ausgeprägt – flexibel einsetzbar, kann je nach Situation tragen oder kippen. Bewusste Steuerung macht den Unterschied.", styles["P"]),
         Spacer(1, 2),
@@ -377,7 +377,7 @@ def _page_3_bar_overview(ranked, styles):
 def _page_4_meaning_cards(top3, bottom2, styles):
     story: List[Any] = []
     story.append(Paragraph("Was das konkret bedeutet", styles["H0"]))
-    story.append(Paragraph("Dein Profil ist individuell – es gibt kein „richtig" oder „falsch". Hier siehst du, wo du <b>Leistung gewinnst</b> und wo <b>Reibung entsteht</b>. Beides ist steuerbar.", styles["Muted"]))
+    story.append(Paragraph("Dein Profil ist individuell – es gibt kein Richtig oder Falsch. Hier siehst du, wo du <b>Leistung gewinnst</b> und wo <b>Reibung entsteht</b>. Beides ist steuerbar.", styles["Muted"]))
     story.append(Spacer(1, 6))
     story.append(Paragraph("<b>Deine stärksten Hebel</b>", styles["Label"]))
     story.append(Spacer(1, 6))
