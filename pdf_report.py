@@ -1,14 +1,16 @@
 from __future__ import annotations
 from io import BytesIO
-from typing import Dict, Any, List, Tuple
+from typing import Dict, Any, List, Tuple, Optional
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import mm
 from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.platypus import (
     SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle,
-    PageBreak, Flowable, KeepTogether
+    PageBreak, Flowable, KeepTogether, HRFlowable
 )
+from reportlab.pdfgen import canvas
+from reportlab.lib.colors import HexColor
 
 # ============================================================
 # IMPORT AUS ZENTRALER CONTENT-DATEI
@@ -19,525 +21,917 @@ from report_content import (
 )
 
 # ============================================================
+# DESIGN SYSTEMS - BEIDE VARIANTEN
+# ============================================================
+
+class DarkTheme:
+    """Premium Dark Theme - Digital/Screen Optimized"""
+    BG_DARKEST = HexColor("#0a0a0a")
+    BG_DARK = HexColor("#141414")
+    BG_ELEVATED = HexColor("#1a1a1a")
+    BORDER = HexColor("#2a2a2a")
+    BORDER_ACTIVE = HexColor("#22c55e")
+    
+    TEXT_PRIMARY = HexColor("#fafafa")
+    TEXT_SECONDARY = HexColor("#a1a1aa")
+    TEXT_MUTED = HexColor("#71717a")
+    
+    ACCENT = HexColor("#22c55e")
+    ACCENT_SOFT = HexColor("#14532d")
+    ACCENT_GLOW = HexColor("#4ade80")
+    
+    SUCCESS = HexColor("#22c55e")
+    WARNING = HexColor("#eab308")
+    
+    FONT_HEADING = "Helvetica-Bold"
+    FONT_BODY = "Helvetica"
+
+class LightTheme:
+    """Clean Light Theme - Print Optimized"""
+    BG_WHITE = HexColor("#ffffff")
+    BG_OFFWHITE = HexColor("#fafafa")
+    BG_LIGHT = HexColor("#f5f5f5")
+    
+    BORDER_LIGHT = HexColor("#e5e5e5")
+    BORDER = HexColor("#d4d4d4")
+    BORDER_DARK = HexColor("#a3a3a3")
+    
+    TEXT_PRIMARY = HexColor("#171717")
+    TEXT_SECONDARY = HexColor("#525252")
+    TEXT_MUTED = HexColor("#737373")
+    
+    ACCENT = HexColor("#16a34a")
+    ACCENT_LIGHT = HexColor("#dcfce7")
+    ACCENT_DARK = HexColor("#14532d")
+    
+    SUCCESS = HexColor("#15803d")
+    WARNING = HexColor("#a16207")
+    
+    FONT_HEADING = "Helvetica-Bold"
+    FONT_BODY = "Helvetica"
+
+# ============================================================
 # PUBLIC API
 # ============================================================
-def build_pdf_report(payload: Dict[str, Any]) -> bytes:
-    name = (payload.get("name") or "").strip() or "Kunde"
+
+def build_pdf_report(payload: Dict[str, Any], theme: str = "dark") -> bytes:
+    """
+    Erstellt das PDF Report
+    
+    Args:
+        payload: Die Report-Daten
+        theme: "dark" (Premium/Screen) oder "light" (Print)
+    """
+    # Theme wählen
+    if theme.lower() == "light":
+        colors = LightTheme
+        canvas_class = LightCanvas
+    else:
+        colors = DarkTheme
+        canvas_class = DarkCanvas
+    
+    # Daten extrahieren
+    name = (payload.get("name") or "").strip() or "Athlet"
     email = (payload.get("email") or "").strip()
     ptype = (payload.get("profile_type") or "").strip() or "–"
     ranked_raw = payload.get("ranked") or []
+    
+    # Daten normalisieren
     ranked = _normalize_ranked(ranked_raw)
     ranked = sorted(ranked, key=lambda x: x[1], reverse=True)
+    
     if not ranked:
         ranked = [(fid, 0) for fid in FUNCTION_ORDER]
+    
     top3 = ranked[:3]
     bottom2 = list(reversed(ranked[-2:]))
+    
+    # PDF Setup
     buf = BytesIO()
     doc = SimpleDocTemplate(
         buf,
         pagesize=A4,
-        leftMargin=16 * mm,
-        rightMargin=16 * mm,
-        topMargin=14 * mm,
-        bottomMargin=14 * mm,
-        title="Performance Profil Report"
+        leftMargin=20 * mm,
+        rightMargin=20 * mm,
+        topMargin=20 * mm,
+        bottomMargin=20 * mm,
+        title=f"Performance Profil – {name}",
+        author="Dominik Müller-Lingelbach",
     )
-    styles = _build_styles()
+    
+    styles = _build_styles(colors)
     story: List[Any] = []
-    # Seite 1: Sog
-    story.extend(_page_1_sog(name, email, styles))
+    
+    # === SEITE 1: COVER ===
+    story.extend(_page_cover(name, email, styles, colors))
     story.append(PageBreak())
-    # Seite 2: Webreport-Logik (Typ + Top/Bottom)
-    story.extend(_page_2_web_snapshot(name, email, ptype, top3, bottom2, styles))
+    
+    # === SEITE 2: PHILOSOPHIE ===
+    story.extend(_page_philosophy(name, styles, colors))
     story.append(PageBreak())
-    # Seite 3: Bar Chart (einmal)
-    story.extend(_page_3_bar_overview(ranked, styles))
+    
+    # === SEITE 3: ÜBERSICHT ===
+    story.extend(_page_overview(name, email, ptype, top3, bottom2, styles, colors))
     story.append(PageBreak())
-    # Seite 4: Meaning Cards (Top3 + Bottom2)
-    story.extend(_page_4_meaning_cards(top3, bottom2, styles))
+    
+    # === SEITE 4: VISUALISIERUNG ===
+    story.extend(_page_visualization(ranked, styles, colors))
     story.append(PageBreak())
-    # 11 Kategorien
+    
+    # === SEITE 5: BEDEUTUNG ===
+    story.extend(_page_meaning(top3, bottom2, styles, colors))
+    story.append(PageBreak())
+    
+    # === SEITEN 6-16: DETAILANALYSE ===
     perc_map = {fid: pct for fid, pct in ranked}
     for fid in FUNCTION_ORDER:
         pct = int(round(perc_map.get(fid, 0)))
-        story.extend(_page_category(fid, pct, styles))
-    # Abschluss / Actionplan / Zusammenarbeit (Sog)
+        story.extend(_page_category_detail(fid, pct, styles, colors))
+        story.append(PageBreak())
+    
+    # === SEITE 17-18: ACTION PLAN ===
+    story.extend(_page_actionplan(top3, bottom2, styles, colors))
     story.append(PageBreak())
-    story.extend(_page_actionplan_and_outro(top3, bottom2, styles))
-    doc.build(story, onFirstPage=_header_footer, onLaterPages=_header_footer)
+    
+    # === SEITE 19-24: OUTRO ===
+    story.extend(_page_outro(styles, colors))
+    
+    # Build
+    doc.build(story, canvasmaker=canvas_class)
     return buf.getvalue()
 
 # ============================================================
-# STYLES / LOOK
+# STYLES BUILDER
 # ============================================================
-GREEN = colors.HexColor("#22c55e")
-BORDER = colors.HexColor("#d7dbe0")
-SOFT_BG = colors.HexColor("#f6f7f9")
 
-def _build_styles():
+def _build_styles(theme) -> Dict[str, ParagraphStyle]:
+    """Baut Styles basierend auf Theme"""
     base = getSampleStyleSheet()
-    styles = {
+    
+    is_dark = hasattr(theme, 'BG_DARKEST')
+    
+    return {
         "Brand": ParagraphStyle(
             "Brand", parent=base["BodyText"],
-            fontName="Helvetica-Bold", fontSize=11, leading=13,
-            spaceBefore=0, spaceAfter=0,
-            textColor=colors.HexColor("#111111")
+            fontName=theme.FONT_HEADING, fontSize=9, leading=11,
+            textColor=theme.TEXT_PRIMARY,
         ),
-        "Tag": ParagraphStyle(
-            "Tag", parent=base["BodyText"],
-            fontName="Helvetica", fontSize=9.5, leading=11,
-            spaceBefore=0, spaceAfter=0,
-            textColor=colors.HexColor("#444444")
+        "HeroTitle": ParagraphStyle(
+            "HeroTitle", parent=base["Heading1"],
+            fontName=theme.FONT_HEADING, fontSize=32, leading=36,
+            textColor=theme.TEXT_PRIMARY, alignment=1, spaceAfter=8,
         ),
-        "H0": ParagraphStyle(
-            "H0", parent=base["Heading1"],
-            fontName="Helvetica-Bold", fontSize=20, leading=22,
-            spaceBefore=0, spaceAfter=2,
-            textColor=colors.HexColor("#111111"),
-            keepWithNext=1,
+        "HeroSubtitle": ParagraphStyle(
+            "HeroSubtitle", parent=base["BodyText"],
+            fontName=theme.FONT_BODY, fontSize=14, leading=18,
+            textColor=theme.TEXT_SECONDARY, alignment=1, spaceAfter=20,
+        ),
+        "H1": ParagraphStyle(
+            "H1", parent=base["Heading1"],
+            fontName=theme.FONT_HEADING, fontSize=22, leading=26,
+            textColor=theme.TEXT_PRIMARY, spaceAfter=8, keepWithNext=1,
+        ),
+        "H2": ParagraphStyle(
+            "H2", parent=base["Heading2"],
+            fontName=theme.FONT_HEADING, fontSize=16, leading=20,
+            textColor=theme.TEXT_PRIMARY, spaceAfter=6, keepWithNext=1,
+        ),
+        "H3": ParagraphStyle(
+            "H3", parent=base["Heading3"],
+            fontName=theme.FONT_HEADING, fontSize=12, leading=15,
+            textColor=theme.TEXT_PRIMARY, spaceAfter=4, keepWithNext=1,
+        ),
+        "Body": ParagraphStyle(
+            "Body", parent=base["BodyText"],
+            fontName=theme.FONT_BODY, fontSize=10.5, leading=14,
+            textColor=theme.TEXT_PRIMARY, spaceAfter=6,
+        ),
+        "BodyLarge": ParagraphStyle(
+            "BodyLarge", parent=base["BodyText"],
+            fontName=theme.FONT_BODY, fontSize=12, leading=16,
+            textColor=theme.TEXT_PRIMARY, spaceAfter=8,
         ),
         "Muted": ParagraphStyle(
             "Muted", parent=base["BodyText"],
-            fontName="Helvetica", fontSize=10.5, leading=12.5,
-            spaceBefore=0, spaceAfter=0,
-            textColor=colors.HexColor("#444444")
+            fontName=theme.FONT_BODY, fontSize=10, leading=13,
+            textColor=theme.TEXT_SECONDARY, spaceAfter=6,
         ),
-        "P": ParagraphStyle(
-            "P", parent=base["BodyText"],
-            fontName="Helvetica", fontSize=11, leading=13.2,
-            spaceBefore=0, spaceAfter=0,
-            textColor=colors.HexColor("#111111")
-        ),
-        "Small": ParagraphStyle(
-            "Small", parent=base["BodyText"],
-            fontName="Helvetica", fontSize=10, leading=12,
-            spaceBefore=0, spaceAfter=0,
-            textColor=colors.HexColor("#111111")
-        ),
-        "Label": ParagraphStyle(
-            "Label", parent=base["BodyText"],
-            fontName="Helvetica-Bold", fontSize=10, leading=12,
-            spaceBefore=0, spaceAfter=0,
-            textColor=colors.HexColor("#111111")
+        "Caption": ParagraphStyle(
+            "Caption", parent=base["BodyText"],
+            fontName=theme.FONT_BODY, fontSize=8, leading=10,
+            textColor=theme.TEXT_MUTED,
         ),
         "Quote": ParagraphStyle(
             "Quote", parent=base["BodyText"],
-            fontName="Helvetica-Oblique", fontSize=12, leading=14,
-            spaceBefore=0, spaceAfter=0,
-            textColor=colors.HexColor("#111111")
+            fontName="Helvetica-Oblique", fontSize=13, leading=17,
+            textColor=theme.TEXT_SECONDARY, leftIndent=20, rightIndent=20,
+            spaceBefore=12, spaceAfter=12,
         ),
-        "CardTitle": ParagraphStyle(
-            "CardTitle", parent=base["BodyText"],
-            fontName="Helvetica-Bold", fontSize=13, leading=15,
-            spaceBefore=0, spaceAfter=0,
-            textColor=colors.HexColor("#111111")
+        "Label": ParagraphStyle(
+            "Label", parent=base["BodyText"],
+            fontName=theme.FONT_HEADING, fontSize=9, leading=11,
+            textColor=theme.TEXT_SECONDARY, spaceAfter=2,
         ),
-        "CardBody": ParagraphStyle(
-            "CardBody", parent=base["BodyText"],
-            fontName="Helvetica", fontSize=11, leading=13,
-            spaceBefore=0, spaceAfter=0,
-            textColor=colors.HexColor("#111111")
-        ),
-        "CardSteer": ParagraphStyle(
-            "CardSteer", parent=base["BodyText"],
-            fontName="Helvetica", fontSize=11, leading=13,
-            spaceBefore=0, spaceAfter=0,
-            textColor=colors.HexColor("#111111")
+        "StatNumber": ParagraphStyle(
+            "StatNumber", parent=base["BodyText"],
+            fontName=theme.FONT_HEADING, fontSize=28, leading=32,
+            textColor=theme.ACCENT if is_dark else theme.ACCENT_DARK,
+            spaceAfter=2,
         ),
     }
-    return styles
-
-def _header_footer(canvas, doc):
-    canvas.saveState()
-    canvas.setFillColor(colors.HexColor("#666666"))
-    canvas.setFont("Helvetica", 8)
-    canvas.drawString(16*mm, 9*mm, "Performance Profil · Individuelle Auswertung")
-    canvas.drawRightString(A4[0]-16*mm, 9*mm, f"Seite {doc.page}")
-    canvas.restoreState()
-
-def _topline_brand(name: str, email: str, styles):
-    who = name if not email else f"{name} · {email}"
-    top = Table([[Paragraph("Performance Profil", styles["Brand"]), Paragraph(_esc(who), styles["Tag"])]],
-                colWidths=[None, 70*mm])
-    top.setStyle(TableStyle([
-        ("VALIGN", (0,0), (-1,-1), "TOP"),
-        ("ALIGN", (0,0), (0,0), "LEFT"),
-        ("ALIGN", (1,0), (1,0), "RIGHT"),
-        ("LEFTPADDING", (0,0), (-1,-1), 0),
-        ("RIGHTPADDING", (0,0), (-1,-1), 0),
-    ]))
-    return top
-
-def _box(title: str, content: List[Any], styles, pad=10, fillColor=colors.white,
-         strokeColor=BORDER, strokeWidth=0.7) -> Table:
-    head = Paragraph(f"<b>{_esc(title)}</b>", styles["Label"])
-    rows = [[head]]
-    for c in content:
-        rows.append([c])
-    t = Table(rows, colWidths=[None])
-    t.setStyle(TableStyle([
-        ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#f8fafc")),
-        ("LEFTPADDING", (0, 0), (-1, -1), 10),
-        ("RIGHTPADDING", (0, 0), (-1, -1), 10),
-        ("TOPPADDING", (0, 0), (-1, 0), 8),
-        ("BOTTOMPADDING", (0, 0), (-1, 0), 7),
-        ("TOPPADDING", (0, 1), (-1, 1), 7),
-        ("BOTTOMPADDING", (0, 1), (-1, 1), 9),
-        ("LINEBELOW", (0, 0), (-1, 0), 0.4, colors.HexColor("#e5e7eb")),
-    ]))
-    return RoundedCard(
-        t, radius=6, stroke=strokeWidth,
-        strokeColor=strokeColor, fillColor=fillColor, padding=6
-    )
-
-def _soft_card(title_left: str, title_right: str, body, styles) -> Table:
-    head = Table(
-        [[
-            Paragraph(f"<b>{_esc(title_left)}</b>", styles["Label"]),
-            Paragraph(f"<b>{_esc(title_right)}</b>", styles["Label"]),
-        ]],
-        colWidths=[None, 24 * mm],
-    )
-    head.setStyle(TableStyle([
-        ("VALIGN", (0,0), (-1,-1), "MIDDLE"),
-        ("LINEBELOW", (0,0), (-1,-1), 0.6, BORDER),
-        ("LEFTPADDING", (0,0), (-1,-1), 0),
-        ("RIGHTPADDING", (0,0), (-1,-1), 0),
-        ("TOPPADDING", (0,0), (-1,-1), 0),
-        ("BOTTOMPADDING", (0,0), (-1,-1), 3),
-        ("ALIGN", (1,0), (1,0), "RIGHT"),
-    ]))
-    if isinstance(body, str):
-        body_flow = Paragraph(_esc(body or ""), styles["P"])
-    else:
-        body_flow = body
-    t = Table([[head], [body_flow]], colWidths=[None])
-    t.setStyle(TableStyle([
-        ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#f8fafc")),
-        ("LEFTPADDING", (0, 0), (-1, -1), 10),
-        ("RIGHTPADDING", (0, 0), (-1, -1), 10),
-        ("TOPPADDING", (0, 0), (-1, -1), 9),
-        ("BOTTOMPADDING", (0, 0), (-1, -1), 9),
-        ("LINEBELOW", (0, 0), (-1, 0), 0.4, colors.HexColor("#e5e7eb")),
-        ("BOTTOMPADDING", (0, 0), (-1, 0), 6),
-        ("TOPPADDING", (0, 0), (-1, 0), 6),
-    ]))
-    return RoundedCard(t, radius=6, stroke=0.7, strokeColor=BORDER, fillColor=colors.HexColor("#f8fafc"), padding=6)
-
-def _bar(pct: int, width_mm: int = 160, height_mm: int = 4):
-    return RoundedProgressBar(pct, width_mm=width_mm, height_mm=height_mm)
 
 # ============================================================
-# PAGES
+# SEITEN-BUILDER
 # ============================================================
-def _page_1_sog(name: str, email: str, styles):
-    story: List[Any] = []
-    story.append(_topline_brand(name, email, styles))
-    story.append(Spacer(1, 6))
-    story.append(Paragraph("Deine individuelle Leistungsarchitektur", styles["H0"]))
-    story.append(Spacer(1, 6))
-    story.append(_box("Wichtig", [
-        Paragraph("Das hier ist kein Persönlichkeitstest.", styles["P"]),
-        Paragraph("Was du jetzt in den Händen hältst, ist eine Landkarte deiner Leistungsmechanik.", styles["P"]),
-        Spacer(1, 4),
-        Paragraph("Sie zeigt dir nicht, wer du bist – sondern <b>wie du Leistung erzeugst</b>.", styles["P"]),
-        Paragraph("Und warum sie manchmal kommt – und manchmal nicht.", styles["P"]),
-    ], styles))
-    story.append(Spacer(1, 6))
-    story.append(_box("Worum es wirklich geht", [
-        Paragraph("Die meisten Menschen arbeiten an Motivation, Zielen und Disziplin.", styles["P"]),
-        Paragraph("Top-Performer arbeiten an etwas anderem: <b>Zugriff</b>.", styles["P"]),
-        Spacer(1, 4),
-        Paragraph("Zugriff auf Klarheit.", styles["P"]),
-        Paragraph("Zugriff auf Entscheidungskraft.", styles["P"]),
-        Paragraph("Zugriff auf Leistung – genau dann, wenn es zählt.", styles["P"]),
-    ], styles))
-    story.append(Spacer(1, 6))
-    story.append(_box("Wie du diesen Report liest", [
-        Paragraph("Nicht wie einen Text – sondern wie einen Spiegel.", styles["P"]),
-        Spacer(1, 4),
-        Paragraph("<b>Wichtig: Es geht nicht darum, überall HOCH zu erreichen.</b>", styles["P"]),
-        Paragraph("Dieses Profil zeigt deine individuelle Leistungsarchitektur – nicht einen Idealzustand, den du erreichen musst. Jede Ausprägung hat eine Funktion. Niedrig ist nicht schlecht. Hoch ist nicht automatisch gut. Entscheidend ist, dass du erkennst, wie du unter Druck funktionierst – und wie du das gezielt für dich nutzt.", styles["P"]),
-        Spacer(1, 4),
-        Paragraph("In jeder Kategorie findest du drei Bereiche (hoch/mittel/niedrig).", styles["P"]),
-        Paragraph("Dein Bereich ist markiert (grüner Rahmen). Die anderen beiden dienen als Kontext – damit du verstehst, wie Leistung entsteht oder kippt.", styles["P"]),
-        Spacer(1, 4),
-        Paragraph("Wenn du an mehreren Stellen denkst: <b>Verdammt - das bin genau ich</b> → dann funktioniert dieser Report.", styles["P"]),
-        Paragraph("Wenn du Widerstand spürst → dann triffst du gerade auf deine Reibung.", styles["P"]),
-        Spacer(1, 4),
-        Paragraph("Beides ist wertvoll. Beides ist steuerbar.", styles["P"]),
-    ], styles))
-    story.append(Spacer(1, 6))
-    story.append(Paragraph("Leistung ist kein Zufall. Sie entsteht dort, wo Klarheit, Steuerung und Verantwortung zusammenkommen.", styles["Quote"]))
+
+def _page_cover(name: str, email: str, styles: Dict, theme) -> List[Any]:
+    """Cover Seite"""
+    story = []
+    story.append(Spacer(1, 50 * mm))
+    story.append(Paragraph("PERFORMANCE PROFIL", styles["Label"]))
+    story.append(Spacer(1, 40 * mm))
+    story.append(Paragraph("Deine individuelle", styles["HeroSubtitle"]))
+    story.append(Paragraph("Leistungsarchitektur", styles["HeroTitle"]))
+    story.append(Spacer(1, 20 * mm))
+    story.append(HRFlowable(width="40%", thickness=1.5, color=theme.ACCENT, spaceBefore=0, spaceAfter=20))
+    story.append(Paragraph(f"<b>{_esc(name)}</b>", styles["HeroSubtitle"]))
+    story.append(Spacer(1, 60 * mm))
+    story.append(Paragraph("11 Faktoren · 77 Fragen · 1 System", styles["Caption"]))
     return story
 
-def _page_2_web_snapshot(name: str, email: str, ptype: str, top3, bottom2, styles):
-    story: List[Any] = []
-    story.append(_topline_brand(name, email, styles))
-    story.append(Spacer(1, 6))
-    story.append(Paragraph("Dein Ergebnis ist da.", styles["H0"]))
-    story.append(Paragraph("Du siehst nicht wer du bist, sondern <b>wie du unter Druck funktionierst</b> – und wie du das steuerst.", styles["Muted"]))
-    story.append(Spacer(1, 6))
-    t = TYPE_MAP.get(ptype, None) or {"name": f"Typ {ptype}", "label": "—", "hint": "—", "explain": "—"}
-    type_head = Table([
-        [
-            Badge(_esc(ptype)),
-            Paragraph(
-                f"<font size='15'><b>{_esc(t['name'])}</b></font><br/>"
-                f"<font size='10' color='#444444'>{_esc(t['hint'])}</font>",
-                styles["P"]
-            )
-        ]
-    ], colWidths=[12*mm, None])
-    type_head.setStyle(TableStyle([
-        ("ALIGN", (0,0), (0,0), "CENTER"),
-        ("VALIGN", (0,0), (-1,-1), "TOP"),
-        ("LEFTPADDING", (0,0), (-1,-1), 6),
-        ("RIGHTPADDING", (0,0), (-1,-1), 6),
-        ("TOPPADDING", (0,0), (-1,-1), 6),
-        ("BOTTOMPADDING", (0,0), (-1,-1), 6),
-    ]))
-    left = _box("Dein Performance-Modus (Arbeitsmodus)", [
-        type_head,
-        Spacer(1, 6),
-        _soft_card(t["label"], "", _format_explain(t["explain"], styles), styles)
-    ], styles)
-    right = _box("Kurz-Auswertung", [
-        _list_block("Deine stärksten Hebel (Top 3)", top3, styles),
-        Spacer(1, 6),
-        _list_block("Deine Reibungszonen (2 niedrigste)", bottom2, styles),
-        Spacer(1, 6),
-        Paragraph("Hinweis: Es geht nicht darum, überall HOCH zu sein. Entscheidend ist, dass du weißt, <b>wo du Leistung holst</b> und <b>wo Reibung entsteht</b> – damit du gezielt steuerst.", styles["Muted"])
-    ], styles)
-    grid = Table([[left, "", right]], colWidths=[86*mm, 6*mm, None])
-    grid.setStyle(TableStyle([
-        ("VALIGN", (0,0), (-1,-1), "TOP"),
-        ("LEFTPADDING", (0,0), (-1,-1), 0),
-        ("RIGHTPADDING", (0,0), (-1,-1), 0),
-        ("TOPPADDING", (0,0), (-1,-1), 0),
-        ("BOTTOMPADDING", (0,0), (-1,-1), 0),
-    ]))
+def _page_philosophy(name: str, styles: Dict, theme) -> List[Any]:
+    """Philosophie Seite"""
+    story = []
+    story.append(_section_header("Das Fundament", styles))
+    story.append(Spacer(1, 12 * mm))
+    
+    story.append(_card(
+        "Das ist kein Persönlichkeitstest.",
+        ["Was du jetzt in den Händen hältst, ist eine <b>Landkarte deiner Leistungsmechanik</b>.",
+         "Sie zeigt dir nicht, wer du bist – sondern <b>wie du Leistung erzeugst</b>."],
+        styles, theme, accent=True
+    ))
+    
+    story.append(Spacer(1, 8 * mm))
+    
+    story.append(_card(
+        "Die meisten arbeiten an Motivation.",
+        ["Top-Performer arbeiten an etwas anderem: <b>Zugriff</b>.",
+         "",
+         "• Zugriff auf Klarheit",
+         "• Zugriff auf Entscheidungskraft",
+         "• Zugriff auf Leistung – genau dann, wenn es zählt"],
+        styles, theme
+    ))
+    
+    story.append(Spacer(1, 8 * mm))
+    story.append(_quote_box(
+        '"Druck zerstört keine Leistung. Druck entlarvt schlechte Systeme."',
+        "— Dominik Müller-Lingelbach",
+        styles, theme
+    ))
+    
+    return story
+
+def _page_overview(name: str, email: str, ptype: str, top3, bottom2, styles: Dict, theme) -> List[Any]:
+    """Ergebnis Übersicht"""
+    story = []
+    story.append(_section_header("Dein Ergebnis", styles))
+    story.append(Paragraph(
+        "Du siehst nicht wer du bist, sondern <b>wie du unter Druck funktionierst</b> – und wie du das steuerst.",
+        styles["Muted"]
+    ))
+    story.append(Spacer(1, 12 * mm))
+    
+    # Performance Modus
+    t = TYPE_MAP.get(ptype, {}) or {"name": f"Typ {ptype}", "label": "—", "hint": "—", "explain": "—"}
+    story.append(_mode_card(ptype, t, styles, theme))
+    story.append(Spacer(1, 12 * mm))
+    
+    # Zwei Spalten
+    left = _metric_card("Deine stärksten Hebel", top3, styles, theme, "top")
+    right = _metric_card("Deine Reibungszonen", bottom2, styles, theme, "bottom")
+    
+    grid = Table([[left, Spacer(1, 1), right]], colWidths=[84*mm, 6*mm, 84*mm])
+    grid.setStyle(TableStyle([("VALIGN", (0,0), (-1,-1), "TOP")]))
     story.append(grid)
+    
     return story
 
-def _list_block(title: str, arr, styles):
-    rows = []
-    for fid, pct in arr:
-        rows.append([
-            Paragraph(f"<b>{_esc(FUNCTION_NAMES.get(fid, fid))}</b>", styles["P"]),
-            "",
-            Paragraph(f"<b>{int(pct)}%</b>", styles["P"]),
-        ])
-    tbl = Table(rows, colWidths=[None, 6*mm, 18*mm])
-    tbl.setStyle(TableStyle([
-        ("ROWBACKGROUNDS", (0,0), (-1,-1), [colors.white, colors.HexColor("#f7f8fa")]),
-        ("LINEBELOW", (0,0), (-1,-1), 0.4, colors.HexColor("#e5e7eb")),
-        ("VALIGN", (0,0), (-1,-1), "MIDDLE"),
-        ("LEFTPADDING", (0,0), (-1,-1), 0),
-        ("RIGHTPADDING", (0,0), (-1,-1), 0),
-        ("TOPPADDING", (0,0), (-1,-1), 4),
-        ("BOTTOMPADDING", (0,0), (-1,-1), 4),
-        ("ALIGN", (2,0), (2,-1), "RIGHT"),
-        ("RIGHTPADDING", (2,0), (2,-1), 2),
-    ]))
-    return _box(title, [tbl], styles)
-
-def _page_3_bar_overview(ranked, styles):
-    story: List[Any] = []
-    story.append(Paragraph("Dein Profil (Bar Chart)", styles["H0"]))
+def _page_visualization(ranked, styles: Dict, theme) -> List[Any]:
+    """Bar Chart Seite"""
+    story = []
+    story.append(_section_header("Dein Profil", styles))
     story.append(Paragraph("Alle 11 Funktionen im Überblick – als klare Ausgangslage.", styles["Muted"]))
-    story.append(Spacer(1, 6))
+    story.append(Spacer(1, 12 * mm))
+    
+    # Chart
     rows = []
     for fid, pct in ranked:
         rows.append([
-            Paragraph(_esc(FUNCTION_NAMES.get(fid, fid)), styles["Small"]),
-            _bar(int(pct), width_mm=105, height_mm=4),
-            Paragraph(f"<b>{int(pct)}%</b>", styles["Small"]),
+            Paragraph(_esc(FUNCTION_NAMES.get(fid, fid)), styles["Body"]),
+            _progress_bar(int(pct), 90*mm, theme),
+            Paragraph(f"<b>{int(pct)}%</b>", styles["Body"]),
         ])
-    tbl = Table(rows, colWidths=[58*mm, None, 16*mm])
-    tbl.setStyle(TableStyle([
+    
+    chart = Table(rows, colWidths=[55*mm, None, 15*mm])
+    chart.setStyle(TableStyle([
         ("VALIGN", (0,0), (-1,-1), "MIDDLE"),
-        ("LINEBELOW", (0,0), (-1,-1), 0.3, colors.HexColor("#e5e7eb")),
-        ("LEFTPADDING", (0,0), (-1,-1), 0),
-        ("RIGHTPADDING", (0,0), (-1,-1), 0),
-        ("TOPPADDING", (0,0), (-1,-1), 6),
-        ("BOTTOMPADDING", (0,0), (-1,-1), 6),
+        ("LINEBELOW", (0,0), (-1,-1), 0.5, theme.BORDER),
+        ("TOPPADDING", (0,0), (-1,-1), 8),
+        ("BOTTOMPADDING", (0,0), (-1,-1), 8),
     ]))
-    story.append(_box("Dein Profil", [tbl], styles))
-    story.append(Spacer(1, 6))
-    story.append(_box("Einordnung der Prozentwerte", [
-        Paragraph("<b>0–25 %:</b> niedrig ausgeprägt – das bedeutet nicht schlecht. Es zeigt, dass dieser Bereich unter Druck weniger Zugriff liefert. Hier lohnt es sich, gezielt zu steuern.", styles["P"]),
-        Spacer(1, 2),
-        Paragraph("<b>25–75 %:</b> mittel ausgeprägt – flexibel einsetzbar, kann je nach Situation tragen oder kippen. Bewusste Steuerung macht den Unterschied.", styles["P"]),
-        Spacer(1, 2),
-        Paragraph("<b>75–100 %:</b> hoch ausgeprägt – ein starker Hebel, wenn du ihn bewusst einsetzt. Aber: Hoch ist kein Ziel an sich. Es geht darum, dein Profil zu kennen und zu nutzen – nicht darum, überall hoch zu sein.", styles["P"]),
-    ], styles))
-    return story
-
-def _page_4_meaning_cards(top3, bottom2, styles):
-    story: List[Any] = []
-    story.append(Paragraph("Was das konkret bedeutet", styles["H0"]))
-    story.append(Paragraph("Dein Profil ist individuell – es gibt kein Richtig oder Falsch. Hier siehst du, wo du <b>Leistung gewinnst</b> und wo <b>Reibung entsteht</b>. Beides ist steuerbar.", styles["Muted"]))
-    story.append(Spacer(1, 6))
-    story.append(Paragraph("<b>Deine stärksten Hebel</b>", styles["Label"]))
-    story.append(Spacer(1, 6))
-    for fid, pct in top3:
-        story.append(_meaning_web_card(fid, int(pct), mode="top", styles=styles))
-        story.append(Spacer(1, 6))
-    story.append(Spacer(1, 4))
-    story.append(Paragraph("<b>Deine Reibungszonen</b>", styles["Label"]))
-    story.append(Spacer(1, 6))
-    for fid, pct in bottom2:
-        story.append(_meaning_web_card(fid, int(pct), mode="low", styles=styles))
-        story.append(Spacer(1, 6))
-    story.append(Paragraph("Deine Top-Hebel sind deine stärksten Wirkungen. Deine Reibungszonen zeigen, wo du unter Druck unnötig Leistung verlierst. Beides gehört zu dir – und beides ist steuerbar. Das Ziel ist nicht, überall hoch zu sein. Das Ziel ist, dein Profil zu kennen und gezielt zu nutzen.", styles["Muted"]))
-    return story
-
-def _page_category(fid: str, pct: int, styles):
-    t = CATEGORY_TEXT.get(fid)
-    if not t:
-        t = {"title": FUNCTION_NAMES.get(fid, fid), "worum": ["(Text fehlt)"], "hoch": ["(Text fehlt)"], "mittel": ["(Text fehlt)"], "niedrig": ["(Text fehlt)"], "praxis": ["(Text fehlt)"] * 3, "merksatz": "(Text fehlt)"}
-    band = get_band(pct)
-    story: List[Any] = []
-    header_pack = KeepTogether([
-        Paragraph(_esc(t["title"]), styles["H0"]),
-        Paragraph(f"Aktueller Wert: <b>{pct} %</b> · Einordnung: <b>{_esc(band)}</b>", styles["Muted"]),
-        Spacer(1, 6),
-        _bar(pct, 160, 4),
-        Spacer(1, 6),
-        _box("Worum es hier wirklich geht", [_lines_to_paragraph(t["worum"], styles)], styles),
-        Spacer(1, 6),
-    ])
-    story.append(header_pack)
-    block_titles = {
-        "hoch":    "Wenn der Wert hoch ist (75–100 %)",
-        "mittel":  "Wenn der Wert im mittleren Bereich liegt (25–75 %)",
-        "niedrig": "Wenn der Wert niedrig ist (0–25 %)",
-    }
-    def _clean_lines(lines: List[str]) -> List[str]:
-        out = []
-        for ln in lines:
-            s = (ln or "").strip()
-            if s.startswith("(") and "Orientierung" in s:
-                continue
-            out.append(ln)
-        return out
-
-    for b in ["hoch", "mittel", "niedrig"]:
-        is_active = (b == band)
-        fill = colors.HexColor("#ecfdf5") if is_active else colors.white
-        stroke = GREEN if is_active else BORDER
-        sw = 2.0 if is_active else 0.7
-        title = block_titles[b]
-        if is_active:
-            title = "DEIN BEREICH · " + title
-        story.append(
-            _box(title, [_lines_to_paragraph(_clean_lines(t[b]), styles)], styles,
-                 fillColor=fill, strokeColor=stroke, strokeWidth=sw)
-        )
-        story.append(Spacer(1, 6))
-
-    pr = t.get("praxis", [])[:3]
-    rows = []
-    for i, line in enumerate(pr):
-        rows.append([
-            Paragraph(f"<b>{i+1}.</b>", styles["P"]),
-            Paragraph(_esc(line), styles["P"]),
+    
+    story.append(_container([chart], styles, theme))
+    story.append(Spacer(1, 8 * mm))
+    
+    # Legende
+    legend = [
+        ["0–25%", "Niedrig ausgeprägt – unter Druck weniger Zugriff. Hier lohnt gezielte Steuerung."],
+        ["25–75%", "Mittel – flexibel einsetzbar, kann tragen oder kippen."],
+        ["75–100%", "Hoch – starker Hebel bei bewusstem Einsatz. Hoch ist kein Ziel an sich."]
+    ]
+    
+    legend_rows = []
+    for r, d in legend:
+        legend_rows.append([
+            Paragraph(f"<b>{r}</b>", styles["Body"]),
+            Paragraph(d, styles["Muted"])
         ])
-    praxis_table = Table(rows, colWidths=[8 * mm, None])
-    praxis_table.setStyle(TableStyle([
-        ("VALIGN", (0, 0), (-1, -1), "TOP"),
-        ("LEFTPADDING", (0, 0), (-1, -1), 0),
-        ("RIGHTPADDING", (0, 0), (-1, -1), 0),
-        ("TOPPADDING", (0, 0), (-1, -1), 3),
-        ("BOTTOMPADDING", (0, 0), (-1, -1), 3),
-    ]))
-    story.append(_box("Praxisregeln – so steuerst du diesen Hebel", [praxis_table], styles))
-    story.append(Spacer(1, 4))
-    story.append(_box("Merksatz", [Paragraph(_esc(t.get("merksatz", "")), styles["P"])], styles))
-    story.append(Spacer(1, 14))
+    
+    legend_table = Table(legend_rows, colWidths=[20*mm, None])
+    legend_table.setStyle(TableStyle([("VALIGN", (0,0), (-1,-1), "TOP"), ("TOPPADDING", (0,0), (-1,-1), 6)]))
+    story.append(_container([legend_table], styles, theme, "Einordnung der Werte"))
+    
     return story
 
-def _page_actionplan_and_outro(top3, bottom2, styles):
-    story: List[Any] = []
+def _page_meaning(top3, bottom2, styles: Dict, theme) -> List[Any]:
+    """Meaning Cards Seite"""
+    story = []
+    story.append(_section_header("Was das konkret bedeutet", styles))
+    story.append(Paragraph(
+        "Dein Profil ist individuell – es gibt kein Richtig oder Falsch. Hier siehst du, wo du <b>Leistung gewinnst</b> und wo <b>Reibung entsteht</b>.",
+        styles["Muted"]
+    ))
+    story.append(Spacer(1, 12 * mm))
+    
+    story.append(Paragraph("Deine stärksten Hebel", styles["H2"]))
+    story.append(Spacer(1, 4 * mm))
+    
+    for fid, pct in top3:
+        story.append(_meaning_card(fid, int(pct), "top", styles, theme))
+        story.append(Spacer(1, 4 * mm))
+    
+    story.append(Spacer(1, 8 * mm))
+    story.append(Paragraph("Deine Reibungszonen", styles["H2"]))
+    story.append(Spacer(1, 4 * mm))
+    
+    for fid, pct in bottom2:
+        story.append(_meaning_card(fid, int(pct), "bottom", styles, theme))
+        story.append(Spacer(1, 4 * mm))
+    
+    return story
+
+def _page_category_detail(fid: str, pct: int, styles: Dict, theme) -> List[Any]:
+    """Detailseite pro Kategorie"""
+    t = CATEGORY_TEXT.get(fid, {})
+    if not t:
+        t = {
+            "title": FUNCTION_NAMES.get(fid, fid),
+            "worum": ["(Beschreibung folgt)"],
+            "hoch": ["(Text fehlt)"], "mittel": ["(Text fehlt)"], "niedrig": ["(Text fehlt)"],
+            "praxis": ["(Praxisregel 1)", "(Praxisregel 2)", "(Praxisregel 3)"],
+            "merksatz": "(Merksatz fehlt)"
+        }
+    
+    band = get_band(pct)
+    story = []
+    
+    # Header
+    header_data = [[Paragraph(_esc(t["title"]), styles["H1"]), Paragraph(f"<b>{pct}%</b>", styles["StatNumber"])]]
+    header = Table(header_data, colWidths=[None, 30*mm])
+    header.setStyle(TableStyle([("VALIGN", (0,0), (-1,-1), "BOTTOM"), ("ALIGN", (1,0), (1,0), "RIGHT")]))
+    story.append(header)
+    
+    story.append(Paragraph(f"Einordnung: <b>{_esc(band)}</b>", styles["Muted"]))
+    story.append(Spacer(1, 4 * mm))
+    story.append(_progress_bar(pct, 170*mm, theme))
+    story.append(Spacer(1, 12 * mm))
+    
+    # Worum es geht
+    story.append(_card("Worum es hier wirklich geht", t["worum"], styles, theme))
+    story.append(Spacer(1, 8 * mm))
+    
+    # Bänder
+    bands = [("hoch", "75–100%", "Hoch ausgeprägt"), ("mittel", "25–75%", "Mittlerer Bereich"), ("niedrig", "0–25%", "Niedrig ausgeprägt")]
+    for b_key, b_range, b_label in bands:
+        is_active = (b_key == band)
+        content = t.get(b_key, ["(Keine Beschreibung)"])
+        story.append(_band_card(b_label, b_range, content, is_active, styles, theme))
+        story.append(Spacer(1, 4 * mm))
+    
+    story.append(Spacer(1, 8 * mm))
+    
+    # Praxisregeln
+    praxis = [f"{i+1}. {p}" for i, p in enumerate(t.get("praxis", [])[:3])]
+    story.append(_card("Praxisregeln – so steuerst du diesen Hebel", praxis, styles, theme, accent=True))
+    story.append(Spacer(1, 4 * mm))
+    story.append(_quote_card(t.get("merksatz", ""), styles, theme))
+    
+    return story
+
+def _page_actionplan(top3, bottom2, styles: Dict, theme) -> List[Any]:
+    """Action Plan"""
+    story = []
+    story.append(_section_header("Action Plan", styles))
+    story.append(Paragraph("Leistung ist kein Zufall. Leistung ist steuerbar.", styles["H2"]))
+    story.append(Spacer(1, 12 * mm))
+    
     top_names = ", ".join([FUNCTION_NAMES.get(fid, fid) for fid, _ in top3])
     low_names = ", ".join([FUNCTION_NAMES.get(fid, fid) for fid, _ in bottom2])
-    h = Paragraph("Actionplan & nächste Schritte", styles["H0"])
-    h.keepWithNext = 1
-    story.append(h)
-    story.append(Spacer(1, 6))
-    sog = Paragraph("<b>Leistung ist kein Zufall. Leistung ist steuerbar.</b>", styles["P"])
-    sog.keepWithNext = 1
-    story.append(sog)
-    story.append(Spacer(1, 6))
-    story.append(_box("Dein Fokus (14 Tage)", [
-        Paragraph(f"<b>Top-Hebel nutzen:</b> {_esc(top_names)}", styles["P"]),
-        Paragraph("Wähle <b>eine</b> Praxisregel aus deinem stärksten Hebel – und setze sie täglich um.", styles["P"]),
-        Spacer(1, 2),
-        Paragraph(f"<b>Reibung reduzieren:</b> {_esc(low_names)}", styles["P"]),
-        Paragraph("Wähle <b>eine</b> Praxisregel aus deiner Reibungszone – und mache sie zur Pflicht.", styles["P"]),
-    ], styles))
-    story.append(Spacer(1, 6))
-    story.append(_box("Abschluss", [
-        Paragraph("Dieses Profil ist kein Urteil.", styles["P"]),
-        Paragraph("Und es ist keine Motivation.", styles["P"]),
-        Spacer(1, 2),
-        Paragraph("Es ist eine Landkarte.", styles["P"]),
-        Spacer(1, 2),
-        Paragraph("Sie zeigt dir nicht, wer du bist, sondern wie du Leistung erzeugst – und warum sie unter Druck manchmal abrufbar ist und manchmal nicht.", styles["P"]),
-        Spacer(1, 2),
-        Paragraph("Du hast jetzt gesehen, wo dein Zugriff stabil ist, wo er kippt und welche Muster darüber entscheiden, ob Leistung kommt – oder verloren geht.", styles["P"]),
-        Spacer(1, 2),
-        Paragraph("Das allein ist wertvoll.", styles["P"]),
-        Spacer(1, 2),
-        Paragraph("<b>Doch Klarheit allein ändert gar nichts.</b>", styles["P"]),
-    ], styles))
-    story.append(Spacer(1, 6))
-    story.append(_box("Was jetzt entscheidet", [
-        Paragraph("Der Unterschied entsteht nicht im Verstehen. Er entsteht dort, wo Entscheidungen getroffen werden – auch wenn sie unbequem sind.", styles["P"]),
-        Spacer(1, 2),
-        Paragraph("Unter Druck. Unter Verantwortung. Unter Erwartung.", styles["P"]),
-        Spacer(1, 2),
-        Paragraph("Und genau hier scheitern selbst sehr erfolgreiche Menschen. Nicht, weil sie zu wenig wissen. Nicht, weil ihnen Disziplin fehlt. Sondern weil ihrem System unter Druck der Zugriff fehlt.", styles["P"]),
-        Spacer(1, 2),
-        Paragraph("<b>Ich arbeite nicht an Motivation. Ich baue Systeme, damit Leistung unter Druck abrufbar wird.</b>", styles["P"]),
-        Spacer(1, 2),
-        Paragraph("Nicht theoretisch. Nicht im Idealzustand. Sondern genau dort, wo Führung, Verantwortung und Entscheidung wirklich stattfinden.", styles["P"]),
-    ], styles))
-    story.append(Spacer(1, 6))
-    story.append(_box("Deine Entscheidung", [
-        Paragraph("Denn Leistung ist kein Zufall. Sie ist das Ergebnis von Struktur, Steuerung und der Fähigkeit, sich selbst im entscheidenden Moment zu führen.", styles["P"]),
-        Spacer(1, 2),
-        Paragraph("<b>Und jetzt kommt der entscheidende Punkt:</b>", styles["P"]),
-        Spacer(1, 2),
-        Paragraph("<b>Die Frage ist nicht, ob du mehr Potenzial hast. Die Frage ist, wie lange du es noch ungenutzt lassen willst.</b>", styles["P"]),
-        Spacer(1, 2),
-        Paragraph("Du kannst dieses Profil schließen und weitermachen wie bisher. Vieles wird weiterhin funktionieren. Doch Frust, Hilflosigkeit und Leistungsverlust werden sich immer wiederholen.", styles["P"]),
-        Spacer(1, 2),
-        Paragraph("Oder du entscheidest dich, dein Leistungssystem nicht länger dem Zufall zu überlassen.", styles["P"]),
-        Spacer(1, 2),
-        Paragraph("Für Menschen, die führen. Verantwortung tragen. Und mehr wollen als nur funktionieren.", styles["P"]),
-        Spacer(1, 2),
-        Paragraph("Für Menschen, die wissen, dass ihr nächster Schritt nicht aus weiterem Input entsteht, sondern aus klarer Spiegelung, konsequenter Steuerung und einem System, das auch dann trägt, wenn der Druck am größten wird.", styles["P"]),
-        Spacer(1, 2),
-        Paragraph("Wenn du beim Lesen gespürt hast, dass hier etwas trifft, das tiefer geht als Motivation oder Mindset, dann ist das kein Zufall.", styles["P"]),
-        Spacer(1, 2),
-        Paragraph("Dann bist du genau an dem Punkt, an dem echte Performance-Arbeit beginnt.", styles["P"]),
-        Spacer(1, 2),
-        Paragraph("<b>Nicht für jeden. Sondern für die, die sich entscheiden, einen Unterschied machen zu wollen.</b>", styles["P"]),
-        Spacer(1, 2),
-        Paragraph("Wenn du willst, ist das hier nicht das Ende dieses Reports. Sondern der Anfang einer Phase, in der Leistung reproduzierbar, Führung klar und Erfolg steuerbar wird.", styles["P"]),
-        Spacer(1, 2),
-        Paragraph("<b>Sag mir Bescheid, wenn du bereit bist.</b>", styles["P"]),
-    ], styles))
+    
+    focus = [
+        f"<b>Top-Hebel nutzen:</b> {top_names}",
+        "Wähle <b>eine</b> Praxisregel aus deinem stärksten Hebel – und setze sie täglich um.",
+        "",
+        f"<b>Reibung reduzieren:</b> {low_names}",
+        "Wähle <b>eine</b> Praxisregel aus deiner Reibungszone – und mache sie zur Pflicht."
+    ]
+    
+    story.append(_card("Dein Fokus (14 Tage)", focus, styles, theme, accent=True))
+    return story
+
+def _page_outro(styles: Dict, theme) -> List[Any]:
+    """Outro Seiten"""
+    story = []
+    story.append(_section_header("Das ist erst der Anfang", styles))
+    story.append(Spacer(1, 12 * mm))
+    
+    sections = [
+        ("Dieses Profil ist kein Urteil.", [
+            "Und es ist keine Motivation.",
+            "Es ist eine Landkarte.",
+            "Sie zeigt dir nicht, wer du bist, sondern wie du Leistung erzeugst."
+        ]),
+        ("Was jetzt entscheidet", [
+            "Der Unterschied entsteht nicht im Verstehen.",
+            "Er entsteht dort, wo Entscheidungen getroffen werden – auch wenn sie unbequem sind."
+        ]),
+        ("Die Entscheidung", [
+            "Die Frage ist nicht, ob du mehr Potenzial hast.",
+            "Die Frage ist, wie lange du es noch ungenutzt lassen willst.",
+            "",
+            "<b>Sag mir Bescheid, wenn du bereit bist.</b>"
+        ])
+    ]
+    
+    for title, content in sections:
+        story.append(_card(title, content, styles, theme))
+        story.append(Spacer(1, 8 * mm))
+    
+    # CTA
+    cta = [
+        "Dominik Müller-Lingelbach",
+        "Performance Leader & Landestrainer BWGV",
+        "",
+        "Kostenloses Erstgespräch buchen:",
+        "performanceprofil.de/termin"
+    ]
+    story.append(_card("Nächster Schritt", cta, styles, theme, accent=True))
+    
     return story
 
 # ============================================================
-# HELPERS
+# UI KOMPONENTEN
 # ============================================================
+
+def _section_header(title: str, styles: Dict) -> Paragraph:
+    return Paragraph(title, styles["H1"])
+
+def _card(title: str, content: List[str], styles: Dict, theme, accent: bool = False) -> Table:
+    """Universal Card Komponente"""
+    title_p = Paragraph(f"<b>{_esc(title)}</b>", styles["H3"])
+    content_html = "<br/>".join([_esc(c) for c in content])
+    content_p = Paragraph(content_html, styles["Body"])
+    
+    data = [[title_p], [content_p]]
+    table = Table(data, colWidths=[170*mm])
+    
+    is_dark = hasattr(theme, 'BG_DARKEST')
+    
+    if accent:
+        if is_dark:
+            bg = theme.ACCENT_SOFT
+            border = theme.ACCENT
+        else:
+            bg = theme.ACCENT_LIGHT
+            border = theme.ACCENT
+        border_width = 1.5
+    else:
+        if is_dark:
+            bg = theme.BG_ELEVATED
+            border = theme.BORDER
+        else:
+            bg = theme.BG_WHITE
+            border = theme.BORDER
+        border_width = 0.5
+    
+    table.setStyle(TableStyle([
+        ("BACKGROUND", (0,0), (-1,-1), bg),
+        ("BOX", (0,0), (-1,-1), border_width, border),
+        ("LEFTPADDING", (0,0), (-1,-1), 12),
+        ("RIGHTPADDING", (0,0), (-1,-1), 12),
+        ("TOPPADDING", (0,0), (-1,0), 12),
+        ("BOTTOMPADDING", (0,0), (-1,0), 8),
+        ("TOPPADDING", (0,1), (-1,1), 8),
+        ("BOTTOMPADDING", (0,1), (-1,1), 12),
+    ]))
+    
+    return table
+
+def _container(content: List[Any], styles: Dict, theme, title: Optional[str] = None) -> Table:
+    """Container Box"""
+    rows = []
+    if title:
+        rows.append([Paragraph(f"<b>{_esc(title)}</b>", styles["H3"])])
+    for c in content:
+        rows.append([c])
+    
+    table = Table(rows, colWidths=[170*mm])
+    
+    is_dark = hasattr(theme, 'BG_DARKEST')
+    bg = theme.BG_DARK if is_dark else theme.BG_OFFWHITE
+    
+    table.setStyle(TableStyle([
+        ("BACKGROUND", (0,0), (-1,-1), bg),
+        ("BOX", (0,0), (-1,-1), 0.5, theme.BORDER),
+        ("LEFTPADDING", (0,0), (-1,-1), 12),
+        ("RIGHTPADDING", (0,0), (-1,-1), 12),
+        ("TOPPADDING", (0,0), (-1,-1), 12),
+        ("BOTTOMPADDING", (0,0), (-1,-1), 12),
+    ]))
+    
+    return table
+
+def _mode_card(ptype: str, type_data: Dict, styles: Dict, theme) -> Table:
+    """Performance Modus Card"""
+    is_dark = hasattr(theme, 'BG_DARKEST')
+    
+    badge = _badge(ptype, theme)
+    header_data = [[
+        badge,
+        Paragraph(f"<b>{_esc(type_data.get('name', ptype))}</b><br/><font color='{theme.TEXT_SECONDARY.hexval()}'>{_esc(type_data.get('hint', ''))}</font>", styles["BodyLarge"])
+    ]]
+    header = Table(header_data, colWidths=[20*mm, None])
+    header.setStyle(TableStyle([("VALIGN", (0,0), (-1,-1), "MIDDLE")]))
+    
+    content = Paragraph(_esc(type_data.get('explain', '')), styles["Body"])
+    
+    data = [[header], [content]]
+    table = Table(data, colWidths=[170*mm])
+    
+    bg = theme.BG_ELEVATED if is_dark else theme.BG_OFFWHITE
+    
+    table.setStyle(TableStyle([
+        ("BACKGROUND", (0,0), (-1,-1), bg),
+        ("BOX", (0,0), (-1,-1), 0.5, theme.BORDER),
+        ("LEFTPADDING", (0,0), (-1,-1), 12),
+        ("RIGHTPADDING", (0,0), (-1,-1), 12),
+        ("TOPPADDING", (0,0), (-1,0), 12),
+        ("BOTTOMPADDING", (0,0), (-1,0), 8),
+        ("TOPPADDING", (0,1), (-1,1), 8),
+        ("BOTTOMPADDING", (0,1), (-1,1), 12),
+        ("LINEBELOW", (0,0), (-1,0), 0.5, theme.BORDER),
+    ]))
+    
+    return table
+
+def _metric_card(title: str, items: List[Tuple], styles: Dict, theme, mode: str) -> Table:
+    """Metric List Card"""
+    header = Paragraph(f"<b>{_esc(title)}</b>", styles["H3"])
+    
+    rows = []
+    for fid, pct in items:
+        name = FUNCTION_NAMES.get(fid, fid)
+        pct_str = f"{int(pct)}%"
+        color = theme.SUCCESS if mode == "top" else theme.WARNING
+        
+        row = Table([[
+            Paragraph(_esc(name), styles["Body"]),
+            Paragraph(f"<font color='{color.hexval()}'><b>{pct_str}</b></font>", styles["Body"])
+        ]], colWidths=[60*mm, None])
+        row.setStyle(TableStyle([
+            ("VALIGN", (0,0), (-1,-1), "MIDDLE"),
+            ("LINEBELOW", (0,0), (-1,-1), 0.5, theme.BORDER),
+            ("TOPPADDING", (0,0), (-1,-1), 8),
+            ("BOTTOMPADDING", (0,0), (-1,-1), 8),
+        ]))
+        rows.append([row])
+    
+    all_rows = [[header]] + rows
+    table = Table(all_rows, colWidths=[84*mm])
+    
+    is_dark = hasattr(theme, 'BG_DARKEST')
+    bg = theme.BG_ELEVATED if is_dark else theme.BG_WHITE
+    
+    table.setStyle(TableStyle([
+        ("BACKGROUND", (0,0), (-1,-1), bg),
+        ("BOX", (0,0), (-1,-1), 0.5, theme.BORDER),
+        ("LEFTPADDING", (0,0), (-1,-1), 10),
+        ("RIGHTPADDING", (0,0), (-1,-1), 10),
+        ("TOPPADDING", (0,0), (-1,0), 10),
+        ("BOTTOMPADDING", (0,0), (-1,0), 8),
+        ("LINEBELOW", (0,0), (-1,0), 1, theme.BORDER),
+    ]))
+    
+    return table
+
+def _meaning_card(fid: str, pct: int, mode: str, styles: Dict, theme) -> Table:
+    """Meaning Card"""
+    card_data = MEANING_CARDS.get(fid, {})
+    title = FUNCTION_NAMES.get(fid, fid)
+    desc = card_data.get("top" if mode == "top" else "low", "")
+    steer = card_data.get("steer", "")
+    
+    tag = "Top-Hebel" if mode == "top" else "Reibungszone"
+    color = theme.SUCCESS if mode == "top" else theme.WARNING
+    
+    header_data = [[
+        Paragraph(f"<font color='{color.hexval()}'><b>{tag}</b></font>", styles["Label"]),
+        Paragraph(f"<b>{pct}%</b>", styles["Body"])
+    ]]
+    header = Table(header_data, colWidths=[None, 20*mm])
+    header.setStyle(TableStyle([
+        ("VALIGN", (0,0), (-1,-1), "MIDDLE"),
+        ("ALIGN", (1,0), (1,0), "RIGHT"),
+        ("LINEBELOW", (0,0), (-1,-1), 0.5, theme.BORDER),
+        ("BOTTOMPADDING", (0,0), (-1,-1), 6),
+    ]))
+    
+    title_p = Paragraph(f"<b>{_esc(title)}</b>", styles["H3"])
+    desc_p = Paragraph(_esc(desc), styles["Body"])
+    steer_p = Paragraph(f"<font color='{theme.TEXT_MUTED.hexval()}'><b>Steuerung:</b> {_esc(steer)}</font>", styles["Muted"])
+    
+    data = [[header], [title_p], [desc_p], [steer_p]]
+    table = Table(data, colWidths=[170*mm])
+    
+    is_dark = hasattr(theme, 'BG_DARKEST')
+    bg = theme.BG_ELEVATED if is_dark else theme.BG_OFFWHITE
+    
+    table.setStyle(TableStyle([
+        ("BACKGROUND", (0,0), (-1,-1), bg),
+        ("BOX", (0,0), (-1,-1), 0.5, theme.BORDER),
+        ("LEFTPADDING", (0,0), (-1,-1), 12),
+        ("RIGHTPADDING", (0,0), (-1,-1), 12),
+        ("TOPPADDING", (0,0), (-1,-1), 8),
+        ("BOTTOMPADDING", (0,0), (-1,-1), 8),
+        ("LINEABOVE", (0,3), (-1,3), 0.5, theme.BORDER),
+        ("TOPPADDING", (0,3), (-1,3), 8),
+    ]))
+    
+    return table
+
+def _band_card(label: str, range_val: str, content: List[str], is_active: bool, styles: Dict, theme) -> Table:
+    """Band Card (hoch/mittel/niedrig)"""
+    status = "DEIN BEREICH · " if is_active else ""
+    header = Paragraph(f"<b>{_esc(status + label)} ({range_val})</b>", styles["Label"])
+    
+    content_html = "<br/>".join([_esc(c) for c in content])
+    content_p = Paragraph(content_html, styles["Body"])
+    
+    data = [[header], [content_p]]
+    table = Table(data, colWidths=[170*mm])
+    
+    is_dark = hasattr(theme, 'BG_DARKEST')
+    
+    if is_active:
+        if is_dark:
+            bg = theme.ACCENT_SOFT
+            border = theme.ACCENT
+        else:
+            bg = theme.ACCENT_LIGHT
+            border = theme.ACCENT
+        border_width = 1.5
+    else:
+        if is_dark:
+            bg = theme.BG_DARK
+            border = theme.BORDER
+        else:
+            bg = theme.BG_WHITE
+            border = theme.BORDER_LIGHT
+        border_width = 0.5
+    
+    table.setStyle(TableStyle([
+        ("BACKGROUND", (0,0), (-1,-1), bg),
+        ("BOX", (0,0), (-1,-1), border_width, border),
+        ("LEFTPADDING", (0,0), (-1,-1), 12),
+        ("RIGHTPADDING", (0,0), (-1,-1), 12),
+        ("TOPPADDING", (0,0), (-1,0), 10),
+        ("BOTTOMPADDING", (0,0), (-1,0), 6),
+        ("TOPPADDING", (0,1), (-1,1), 6),
+        ("BOTTOMPADDING", (0,1), (-1,1), 10),
+    ]))
+    
+    return table
+
+def _quote_box(quote: str, author: str, styles: Dict, theme) -> Table:
+    """Quote Box mit Author"""
+    is_dark = hasattr(theme, 'BG_DARKEST')
+    
+    quote_p = Paragraph(quote, styles["Quote"])
+    author_p = Paragraph(author, styles["Caption"])
+    
+    data = [[quote_p], [author_p]]
+    table = Table(data, colWidths=[170*mm])
+    
+    if is_dark:
+        bg = theme.BG_ELEVATED
+        border = theme.BORDER
+    else:
+        bg = theme.BG_OFFWHITE
+        border = theme.BORDER_LIGHT
+    
+    table.setStyle(TableStyle([
+        ("BACKGROUND", (0,0), (-1,-1), bg),
+        ("BOX", (0,0), (-1,-1), 0.5, border),
+        ("LEFTPADDING", (0,0), (-1,-1), 16),
+        ("RIGHTPADDING", (0,0), (-1,-1), 16),
+        ("TOPPADDING", (0,0), (-1,-1), 12),
+        ("BOTTOMPADDING", (0,0), (-1,-1), 12),
+        ("LINEBEFORE", (0,0), (0,-1), 3, theme.ACCENT),
+        ("ALIGN", (0,1), (-1,1), "RIGHT"),
+    ]))
+    
+    return table
+
+def _quote_card(text: str, styles: Dict, theme) -> Table:
+    """Simple Quote Card"""
+    quote = Paragraph(f"<i>„{_esc(text)}"</i>, styles["Quote"])
+    
+    data = [[quote]]
+    table = Table(data, colWidths=[170*mm])
+    
+    is_dark = hasattr(theme, 'BG_DARKEST')
+    bg = theme.BG_DARK if is_dark else theme.BG_OFFWHITE
+    
+    table.setStyle(TableStyle([
+        ("BACKGROUND", (0,0), (-1,-1), bg),
+        ("BOX", (0,0), (-1,-1), 0.5, theme.BORDER),
+        ("LEFTPADDING", (0,0), (-1,-1), 16),
+        ("RIGHTPADDING", (0,0), (-1,-1), 16),
+        ("TOPPADDING", (0,0), (-1,-1), 12),
+        ("BOTTOMPADDING", (0,0), (-1,-1), 12),
+        ("LINEBEFORE", (0,0), (0,-1), 3, theme.ACCENT),
+    ]))
+    
+    return table
+
+# ============================================================
+# CUSTOM FLOWABLES
+# ============================================================
+
+def _progress_bar(pct: int, width: float, theme) -> Flowable:
+    """Progress Bar Factory"""
+    is_dark = hasattr(theme, 'BG_DARKEST')
+    return ProgressBar(pct, width, theme, is_dark)
+
+class ProgressBar(Flowable):
+    def __init__(self, pct: int, width: float, theme, is_dark: bool):
+        super().__init__()
+        self.pct = max(0, min(100, int(pct)))
+        self.width = width
+        self.height = 5 * mm if is_dark else 4 * mm
+        self.radius = self.height / 2
+        self.theme = theme
+        self.is_dark = is_dark
+    
+    def wrap(self, availWidth, availHeight):
+        return self.width, self.height
+    
+    def draw(self):
+        c = self.canv
+        c.saveState()
+        
+        # Track
+        if self.is_dark:
+            c.setFillColor(self.theme.BG_DARKEST)
+            c.setStrokeColor(self.theme.BORDER)
+        else:
+            c.setFillColor(self.theme.BORDER_LIGHT)
+            c.setStrokeColor(self.theme.BORDER)
+        
+        c.setLineWidth(0.5)
+        c.roundRect(0, 0, self.width, self.height, self.radius, fill=1, stroke=1)
+        
+        # Fill
+        if self.pct > 0:
+            fill_width = (self.pct / 100.0) * self.width
+            c.setFillColor(self.theme.ACCENT)
+            c.roundRect(0, 0, fill_width, self.height, self.radius, fill=1, stroke=0)
+        
+        c.restoreState()
+
+def _badge(text: str, theme) -> Flowable:
+    """Badge Factory"""
+    is_dark = hasattr(theme, 'BG_DARKEST')
+    return Badge(text, theme, is_dark)
+
+class Badge(Flowable):
+    def __init__(self, text: str, theme, is_dark: bool):
+        super().__init__()
+        self.text = text[:2].upper()
+        self.size = 16 * mm
+        self.theme = theme
+        self.is_dark = is_dark
+    
+    def wrap(self, availWidth, availHeight):
+        return self.size, self.size
+    
+    def draw(self):
+        c = self.canv
+        c.saveState()
+        
+        if self.is_dark:
+            c.setFillColor(self.theme.BG_ELEVATED)
+            c.setStrokeColor(self.theme.ACCENT)
+            text_color = self.theme.ACCENT
+        else:
+            c.setFillColor(self.theme.BG_WHITE)
+            c.setStrokeColor(self.theme.ACCENT)
+            text_color = self.theme.ACCENT_DARK if hasattr(self.theme, 'ACCENT_DARK') else self.theme.ACCENT
+        
+        c.setLineWidth(1.5)
+        c.roundRect(0, 0, self.size, self.size, 4, fill=1, stroke=1)
+        
+        c.setFillColor(text_color)
+        c.setFont("Helvetica-Bold", 14)
+        c.drawCentredString(self.size/2, self.size/2 - 5, self.text)
+        
+        c.restoreState()
+
+# ============================================================
+# CUSTOM CANVAS
+# ============================================================
+
+class DarkCanvas(canvas.Canvas):
+    """Dark Mode Canvas"""
+    def showPage(self):
+        self.saveState()
+        self.setFillColor(DarkTheme.BG_DARKEST)
+        self.rect(0, 0, A4[0], A4[1], fill=1, stroke=0)
+        self._draw_header_footer(DarkTheme)
+        self.restoreState()
+        super().showPage()
+    
+    def _draw_header_footer(self, theme):
+        self.saveState()
+        self.setStrokeColor(theme.BORDER)
+        self.setLineWidth(0.5)
+        self.line(20*mm, A4[1] - 15*mm, A4[0] - 20*mm, A4[1] - 15*mm)
+        
+        self.setFillColor(theme.TEXT_MUTED)
+        self.setFont("Helvetica", 8)
+        self.drawString(20*mm, A4[1] - 12*mm, "PERFORMANCE PROFIL")
+        
+        page_num = self.getPageNumber()
+        self.drawRightString(A4[0] - 20*mm, A4[1] - 12*mm, f"Seite {page_num}")
+        
+        self.line(20*mm, 15*mm, A4[0] - 20*mm, 15*mm)
+        self.drawCentredString(A4[0]/2, 10*mm, "performanceprofil.de · Dominik Müller-Lingelbach")
+        self.restoreState()
+
+class LightCanvas(canvas.Canvas):
+    """Light Mode Canvas"""
+    def showPage(self):
+        self._draw_header_footer(LightTheme)
+        super().showPage()
+    
+    def _draw_header_footer(self, theme):
+        self.saveState()
+        self.setStrokeColor(theme.BORDER_LIGHT)
+        self.setLineWidth(0.5)
+        self.line(20*mm, A4[1] - 15*mm, A4[0] - 20*mm, A4[1] - 15*mm)
+        
+        self.setFillColor(theme.TEXT_MUTED)
+        self.setFont("Helvetica", 8)
+        self.drawString(20*mm, A4[1] - 12*mm, "PERFORMANCE PROFIL")
+        
+        page_num = self.getPageNumber()
+        self.drawRightString(A4[0] - 20*mm, A4[1] - 12*mm, f"Seite {page_num}")
+        
+        self.line(20*mm, 15*mm, A4[0] - 20*mm, 15*mm)
+        self.drawCentredString(A4[0]/2, 10*mm, "performanceprofil.de · Dominik Müller-Lingelbach")
+        self.restoreState()
+
+# ============================================================
+# UTILITIES
+# ============================================================
+
 def _normalize_ranked(ranked) -> List[Tuple[str, int]]:
+    """Normalisiert Ranked-Daten"""
     if not ranked:
         return []
+    
     if isinstance(ranked, list):
         out = []
         for item in ranked:
@@ -547,6 +941,7 @@ def _normalize_ranked(ranked) -> List[Tuple[str, int]]:
                 except Exception:
                     out.append((str(item[0]), 0))
         return out
+    
     if isinstance(ranked, dict):
         out = []
         for k, v in ranked.items():
@@ -555,208 +950,15 @@ def _normalize_ranked(ranked) -> List[Tuple[str, int]]:
             except Exception:
                 out.append((str(k), 0))
         return out
+    
     return []
 
 def _esc(s: str) -> str:
-    s = (s or "")
-    s = s.replace("\xad", "").replace("\u200b", "").replace("\u2060", "")
-    return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
-
-def _lines_to_paragraph(lines: List[str], styles, bullet_prefix: str = "") -> Paragraph:
-    paras: List[str] = []
-    cur_lines: List[str] = []
-    def flush():
-        nonlocal cur_lines
-        if cur_lines:
-            paras.append("<br/>".join(cur_lines))
-            cur_lines = []
-    for ln in lines:
-        s = (ln or "").strip()
-        if not s:
-            flush()
-            continue
-        if s.startswith(("•", "-", "–")):
-            item = s.lstrip("•-–").strip()
-            pref = (bullet_prefix or "").strip()
-            if pref:
-                cur_lines.append(f"&nbsp;&nbsp;&nbsp;&nbsp;{_esc(pref)}&nbsp;&nbsp;{_esc(item)}")
-            else:
-                cur_lines.append(f"&nbsp;&nbsp;&nbsp;&nbsp;{_esc(item)}")
-            continue
-        cur_lines.append(_esc(s))
-    flush()
-    html = "<br/><br/>".join(paras)
-    return Paragraph(html, styles["P"])
-
-def _format_explain(text: str, styles):
-    text = (text or "").strip()
-    if not text:
-        return Paragraph("", styles["P"])
-    if "Führung:" not in text:
-        return Paragraph(_esc(text), styles["P"])
-    before, after = text.split("Führung:", 1)
-    before = before.strip()
-    after = after.strip()
-    rows = []
-    if before:
-        rows.append([Paragraph(_esc(before), styles["P"])])
-    rows.append([Spacer(1, 4)])
-    rows.append([Paragraph(f"<b>Führung:</b> {_esc(after)}", styles["P"])])
-    t = Table(rows, colWidths=[None])
-    t.setStyle(TableStyle([
-        ("LEFTPADDING", (0,0), (-1,-1), 0),
-        ("RIGHTPADDING", (0,0), (-1,-1), 0),
-        ("TOPPADDING", (0,0), (-1,-1), 0),
-        ("BOTTOMPADDING", (0,0), (-1,-1), 0),
-    ]))
-    return t
-
-def _tmp_style(size: int, bold: bool = False, color: str = "#111111") -> ParagraphStyle:
-    base = getSampleStyleSheet()["BodyText"]
-    return ParagraphStyle(
-        f"TMP_{size}_{'B' if bold else 'R'}",
-        parent=base,
-        fontName="Helvetica-Bold" if bold else "Helvetica",
-        fontSize=size,
-        leading=size + 2,
-        textColor=colors.HexColor(color)
-    )
-
-def _meaning_web_card(fid: str, pct: int, mode: str, styles):
-    tag_left = "Top-Hebel" if mode == "top" else "Reibungszone"
-    card = MEANING_CARDS.get(fid, {})
-    title = FUNCTION_NAMES.get(fid, fid)
-    desc = card.get("top", "") if mode == "top" else card.get("low", "")
-    steer = card.get("steer", "")
-    title_style = _tmp_style(13, bold=True, color="#111111")
-    head = Table(
-        [[
-            Paragraph(f"<b>{_esc(tag_left)}</b>", styles["Label"]),
-            Paragraph(f"<b>{int(pct)}%</b>", styles["Label"]),
-        ]],
-        colWidths=[None, 24 * mm],
-    )
-    head.setStyle(TableStyle([
-        ("VALIGN", (0,0), (-1,-1), "MIDDLE"),
-        ("ALIGN", (1,0), (1,0), "RIGHT"),
-        ("LEFTPADDING", (0,0), (-1,-1), 0),
-        ("RIGHTPADDING", (0,0), (-1,-1), 0),
-        ("TOPPADDING", (0,0), (-1,-1), 2),
-        ("BOTTOMPADDING", (0,0), (-1,-1), 6),
-        ("LINEBELOW", (0,0), (-1,0), 0.6, BORDER),
-    ]))
-    body_title = Paragraph(_esc(title), title_style)
-    body_desc = Paragraph(_esc(desc), styles["P"])
-    steer_style = ParagraphStyle(
-        "Steer", parent=styles["P"],
-        fontSize=10.5, leading=12.5,
-        textColor=colors.HexColor("#444444"),
-        spaceBefore=0, spaceAfter=0,
-    )
-    body_steer = Paragraph(f"<b>Steuerung:</b> {_esc(steer)}", steer_style)
-    t = Table([[head], [body_title], [body_desc], [body_steer]], colWidths=[None])
-    t.setStyle(TableStyle([
-        ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#f8fafc")),
-        ("LEFTPADDING", (0, 0), (-1, -1), 10),
-        ("RIGHTPADDING", (0, 0), (-1, -1), 10),
-        ("TOPPADDING", (0, 0), (-1, -1), 3),
-        ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
-        ("TOPPADDING", (0, 1), (-1, 1), 5),
-        ("BOTTOMPADDING", (0, 1), (-1, 1), 5),
-        ("TOPPADDING", (0, 2), (-1, 2), 0),
-        ("BOTTOMPADDING", (0, 2), (-1, 2), 5),
-        ("LINEABOVE", (0, 3), (-1, 3), 0.4, colors.HexColor("#e5e7eb")),
-        ("TOPPADDING", (0, 3), (-1, 3), 5),
-        ("BOTTOMPADDING", (0, 3), (-1, 3), 0),
-    ]))
-    return RoundedCard(t, radius=6, stroke=0.7, strokeColor=BORDER, fillColor=colors.HexColor("#f8fafc"), padding=6)
-
-# ============================================================
-# CUSTOM FLOWABLES
-# ============================================================
-class RoundedProgressBar(Flowable):
-    def __init__(self, pct, width_mm=160, height_mm=4, radius_mm=None,
-                 fillColor=GREEN, backColor=colors.HexColor("#e5e7eb"),
-                 strokeColor=colors.HexColor("#d1d5db"), strokeWidth=0.6):
-        super().__init__()
-        self.pct = max(0, min(100, int(pct)))
-        self.width = width_mm * mm
-        self.height = height_mm * mm
-        self.radius = (radius_mm * mm) if radius_mm is not None else (self.height / 2)
-        self.fillColor = fillColor
-        self.backColor = backColor
-        self.strokeColor = strokeColor
-        self.strokeWidth = strokeWidth
-
-    def wrap(self, availWidth, availHeight):
-        return self.width, self.height
-
-    def draw(self):
-        c = self.canv
-        c.saveState()
-        r = min(self.radius, self.height / 2)
-        c.setLineWidth(self.strokeWidth)
-        c.setStrokeColor(self.strokeColor)
-        c.setFillColor(self.backColor)
-        c.roundRect(0, 0, self.width, self.height, r, stroke=1, fill=1)
-        fill_w = (self.pct / 100.0) * self.width
-        if fill_w > 0:
-            c.setStrokeColor(self.fillColor)
-            c.setFillColor(self.fillColor)
-            r2 = min(r, fill_w / 2)
-            c.roundRect(0, 0, fill_w, self.height, r2, stroke=0, fill=1)
-        c.restoreState()
-
-class Badge(Flowable):
-    def __init__(self, text, w=12*mm, h=12*mm, radius=3, stroke=0.9,
-                 strokeColor=GREEN, fillColor=colors.HexColor("#e9f7ef")):
-        super().__init__()
-        self.text = text
-        self.w = w
-        self.h = h
-        self.radius = radius
-        self.stroke = stroke
-        self.strokeColor = strokeColor
-        self.fillColor = fillColor
-
-    def wrap(self, availWidth, availHeight):
-        return self.w, self.h
-
-    def draw(self):
-        c = self.canv
-        c.saveState()
-        c.setLineWidth(self.stroke)
-        c.setStrokeColor(self.strokeColor)
-        c.setFillColor(self.fillColor)
-        c.roundRect(0, 0, self.w, self.h, self.radius, stroke=1, fill=1)
-        c.setFillColor(colors.HexColor("#0b5d2a"))
-        c.setFont("Helvetica-Bold", 16)
-        c.drawCentredString(self.w / 2, (self.h / 2) - 6, self.text)
-        c.restoreState()
-
-class RoundedCard(Flowable):
-    def __init__(self, inner, radius=6, stroke=1, strokeColor=BORDER,
-                 fillColor=colors.white, padding=8):
-        super().__init__()
-        self.inner = inner
-        self.radius = radius
-        self.stroke = stroke
-        self.strokeColor = strokeColor
-        self.fillColor = fillColor
-        self.padding = padding
-
-    def wrap(self, availWidth, availHeight):
-        iw, ih = self.inner.wrap(availWidth - 2 * self.padding, availHeight)
-        self.width = availWidth
-        self.height = ih + 2 * self.padding
-        return self.width, self.height
-
-    def draw(self):
-        c = self.canv
-        c.saveState()
-        c.setStrokeColor(self.strokeColor)
-        c.setFillColor(self.fillColor)
-        c.setLineWidth(self.stroke)
-        c.roundRect(0, 0, self.width, self.height, self.radius, stroke=1, fill=1)
-        self.inner.drawOn(c, self.padding, self.padding)
-        c.restoreState()
+    """XML Escaping"""
+    if not s:
+        return ""
+    return (str(s)
+            .replace("&", "&amp;")
+            .replace("<", "&lt;")
+            .replace(">", "&gt;")
+            .replace('"', "&quot;"))
