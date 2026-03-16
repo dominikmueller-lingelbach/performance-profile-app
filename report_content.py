@@ -595,7 +595,7 @@ CATEGORY_TEXT: Dict[str, Dict[str, Any]] = {
         ],
         "praxis": [
             "Vor jeder Entscheidung: Lege fest, welche 2–3 Informationen du mindestens brauchst. Nicht zwanzig. Dann entscheide.",
-            "Zeitfenster setzen: Gib jeder Entscheidung eine Frist. Zum Beispiel: „Bis Freitag 12 Uhr steht meine Entscheidung." Ohne Frist analysierst du endlos.",
+            "Zeitfenster setzen: Gib jeder Entscheidung eine Frist. Zum Beispiel: Bis Freitag 12 Uhr steht meine Entscheidung. Ohne Frist analysierst du endlos.",
             "Schlimmsten Fall vordenken: Frage dich vor wichtigen Entscheidungen: Was wäre der größte Fehler – und wie verhindere ich ihn? Das gibt Sicherheit, ohne endlos zu grübeln."
         ],
         "merksatz": "Information ist dann eine Stärke, wenn sie zur Entscheidung führt – nicht wenn sie die Entscheidung ersetzt.",
@@ -697,7 +697,7 @@ CATEGORY_TEXT: Dict[str, Dict[str, Any]] = {
             "Du bringst Leistung – aber sie wird nicht wahrgenommen, weil sie niemand sieht.",
         ],
         "praxis": [
-            "Einmal pro Woche Rückmeldung einholen: Geh auf eine konkrete Person zu und frage gezielt: „Was lief gut, was kann besser?" Nicht hoffen, dass es jemand von selbst sagt.",
+            "Einmal pro Woche Rückmeldung einholen: Geh auf eine konkrete Person zu und frage gezielt: Was lief gut, was kann besser? Nicht hoffen, dass es jemand von selbst sagt.",
             "Ergebnisse festhalten: Schreibe am Ende jeder Woche in 3 Sätzen auf, was du geliefert hast. Das macht deine Leistung sichtbar – für dich und für andere.",
             "Rückmeldung von deinem Selbstwert trennen: Feedback sagt etwas über dein Ergebnis – nicht über deinen Wert als Mensch. Wer das trennen kann, wird durch Rückmeldung stärker statt verletzlicher."
         ],
@@ -749,7 +749,7 @@ CATEGORY_TEXT: Dict[str, Dict[str, Any]] = {
             "sondern weil du dir nicht genug Raum gibst, obwohl du Wirkung hättest.",
         ],
         "praxis": [
-            "Rolle in einem Satz definieren: Schreibe auf: „Ich bin verantwortlich für …" – und sage diesen Satz laut. Klarheit über deine Rolle gibt dir sofort Zugriff.",
+            "Rolle in einem Satz definieren: Schreibe auf: Ich bin verantwortlich für ... – und sage diesen Satz laut. Klarheit über deine Rolle gibt dir sofort Zugriff.",
             "Deinen Beitrag sichtbar machen: Schreibe am Ende jeder Woche auf, was du konkret geliefert hast. Nicht um anzugeben – sondern damit deine Wirkung nicht untergeht.",
             "Position als Werkzeug nutzen: Nutze deine Stellung, um Orientierung zu geben und Erwartungen zu klären – nicht um dein Ego zu bedienen. Funktionale Sichtbarkeit schlägt Status jedes Mal."
         ],
