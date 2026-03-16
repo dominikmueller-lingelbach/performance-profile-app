@@ -890,19 +890,25 @@ def _light_band_card(label: str, range_val: str, content: List[str], is_active: 
     
     return table
 
-def _light_quote_card(text: str, styles: Dict) -> Table:
-    """Zitat/Merksatz Card - Light"""
-    quote = Paragraph(f"<i>„{_esc(text)}"</i>, styles["Quote"])
+def _quote_card(text: str, styles: Dict, theme, is_dark: bool) -> Table:
+    """Simple Quote Card"""
+    escaped_text = _esc(text)
+    # KORRIGIERT: Einfache Quotes außen, normale Anführungszeichen innen
+    quote = Paragraph(f'<i>"{escaped_text}"</i>', styles["Quote"])
     
-    table = Table([[quote]], colWidths=[170*mm])
+    data = [[quote]]
+    table = Table(data, colWidths=[170*mm])
+    
+    bg = theme.BG_DARK if is_dark else theme.BG_OFFWHITE
+    
     table.setStyle(TableStyle([
-        ("BACKGROUND", (0,0), (-1,-1), LightDesignSystem.GRAY_100),
-        ("BOX", (0,0), (-1,-1), 0.5, LightDesignSystem.BORDER_LIGHT),
+        ("BACKGROUND", (0,0), (-1,-1), bg),
+        ("BOX", (0,0), (-1,-1), 0.5, theme.BORDER if is_dark else theme.BORDER),
         ("LEFTPADDING", (0,0), (-1,-1), 16),
         ("RIGHTPADDING", (0,0), (-1,-1), 16),
         ("TOPPADDING", (0,0), (-1,-1), 12),
         ("BOTTOMPADDING", (0,0), (-1,-1), 12),
-        ("LINEBEFORE", (0,0), (0,-1), 3, LightDesignSystem.ACCENT),
+        ("LINEBEFORE", (0,0), (0,-1), 3, theme.ACCENT),
     ]))
     
     return table
