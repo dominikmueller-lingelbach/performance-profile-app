@@ -766,7 +766,8 @@ def _quote_box(quote: str, author: str, styles: Dict, theme) -> Table:
 
 def _quote_card(text: str, styles: Dict, theme) -> Table:
     """Simple Quote Card"""
-    quote = Paragraph(f"<i>„{_esc(text)}"</i>, styles["Quote"])
+    escaped_text = _esc(text)
+    quote = Paragraph(f'<i>„{escaped_text}"</i>', styles["Quote"])
     
     data = [[quote]]
     table = Table(data, colWidths=[170*mm])
