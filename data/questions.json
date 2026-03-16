@@ -8,7 +8,7 @@
   {"id":"q7","text":"In Stresssituationen bleibe ich handlungsfähig statt blockiert.","function_id":"DST","function_name":"Leistungsmodus unter Belastung"},
 
   {"id":"q8","text":"Ich brauche klare Regeln und Standards, um konstant Leistung zu liefern.","function_id":"STR","function_name":"Entscheidungsstabilität & Ordnung"},
-  {"id":"q9","text":"Ich plane bewusst voraus, statt mich auf „wird schon" zu verlassen.","function_id":"STR","function_name":"Entscheidungsstabilität & Ordnung"},
+  {"id":"q9","text":"Ich plane bewusst voraus, statt mich auf (wird schon) zu verlassen.","function_id":"STR","function_name":"Entscheidungsstabilität & Ordnung"},
   {"id":"q10","text":"Ohne Struktur verliere ich unnötig Leistung.","function_id":"STR","function_name":"Entscheidungsstabilität & Ordnung"},
   {"id":"q11","text":"Ich arbeite mit festen Routinen, damit ich auch an schlechten Tagen liefere.","function_id":"STR","function_name":"Entscheidungsstabilität & Ordnung"},
   {"id":"q12","text":"Chaotische oder unklare Abläufe kosten mich Leistung.","function_id":"STR","function_name":"Entscheidungsstabilität & Ordnung"},
