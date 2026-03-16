@@ -1,7 +1,16 @@
 # report_content.py
-from typing import Dict
+# ============================================================
+# ZENTRALE CONTENT-DATEI – Single Source of Truth
+# Alle Texte, Typen, Funktionsnamen, Meaning Cards hier.
+# Wird importiert von: report_builder.py, pdf_report.py, app.py
+# Wird als JSON injiziert in: results.html
+# ============================================================
 
-# 11 FUNKTIONEN: Klartext-Namen (IDs -> Anzeige)
+from typing import Dict, List, Any
+
+# ============================================================
+# 11 PERFORMANCE-FUNKTIONEN: IDs -> Klartext-Namen
+# ============================================================
 FUNCTION_NAMES: Dict[str, str] = {
     "DST": "Leistungsmodus unter Belastung",
     "STR": "Entscheidungsstabilität & Ordnung",
@@ -16,122 +25,754 @@ FUNCTION_NAMES: Dict[str, str] = {
     "STA": "Positions- & Anerkennungsorientierung",
 }
 
-# 5 TYPEN / ARBEITSMODI: Kurz + Erklärung (Report-tauglich)
+# Reihenfolge für PDF / Bar Chart
+FUNCTION_ORDER: List[str] = [
+    "DST", "STR", "MAC", "KON", "MOR",
+    "IND", "AKT", "INF", "COM", "AUF", "STA"
+]
+
+# ============================================================
+# 5 PERFORMANCE-PROFIL-TYPEN (Arbeitsmodi)
+# ============================================================
 TYPE_MAP: Dict[str, Dict[str, str]] = {
     "A": {
         "name": "Stabilitätsmodus",
+        "label": "Fundament-Performer",
+        "hint": "Du lieferst, wenn Rahmen & Standards klar sind.",
+        "explain": "Ruhig, zuverlässig, präzise. Führung: klare Rahmen, keine künstliche Hektik.",
         "headline": "Ich bleibe klar, wenn andere wackeln.",
-        "explain": (
-            "Du lieferst konstant, wenn Rahmen, Standards und Prioritäten klar sind. "
-            "Du gibst Stabilität, triffst saubere Entscheidungen und hältst Qualität – auch wenn es unruhig wird."
-        ),
-        "lead": "Führung/Steuerung: klare Rahmen, saubere Abläufe, keine künstliche Hektik."
     },
     "B": {
         "name": "Druckmodus",
+        "label": "Peak-Performer",
+        "hint": "Je höher der Druck, desto besser – wenn du ihn steuerst.",
+        "explain": "Hochfokussiert in kritischen Momenten. Führung: Druck dosieren + klare Regeln + Regeneration.",
         "headline": "Je höher der Druck, desto besser werde ich – wenn ich ihn steuere.",
-        "explain": (
-            "Du kannst in kritischen Momenten extrem fokussiert performen. "
-            "Du brauchst Aktivierung – aber nicht als Dauerzustand. Ohne klare Regeln drohen Übersteuerung und Erschöpfung."
-        ),
-        "lead": "Führung/Steuerung: Druck dosieren, klare Entscheidungsregeln, Regeneration aktiv planen."
     },
     "C": {
         "name": "Gestaltungsmodus",
+        "label": "Lösungs- & Konzeptmodus",
+        "hint": "Freiheit erzeugt Leistung. Ziele ja – Detailsteuerung nein.",
+        "explain": "Kreativ, konzeptionell, lösungsorientiert. Führung: Ziel klar, Weg offen. Ergebnis zählt, nicht die Methode.",
         "headline": "Ich brauche Freiheit, um Leistung zu bringen.",
-        "explain": (
-            "Du performst über Autonomie, Eigenständigkeit und konzeptionelles Denken. "
-            "Ziele müssen klar sein – der Weg darf offen bleiben. Zu enge Vorgaben drücken deine Leistung."
-        ),
-        "lead": "Führung/Steuerung: Ziel klar, Weg offen. Ergebnisse messen statt Prozesse kontrollieren."
     },
     "D": {
         "name": "Vergleichsmodus",
+        "label": "Ambitions-Performer",
+        "hint": "Leistung entsteht im Wettbewerb, Standards und Feedback.",
+        "explain": "Leistungsgetrieben, benchmark-orientiert, ambitioniert. Führung: Maßstäbe sauber setzen, Feedback sachlich, Vergleich kontrollieren.",
         "headline": "Leistung entsteht für mich im Wettbewerb.",
-        "explain": (
-            "Du gehst an, wenn Standards hoch sind, Vergleich möglich ist und Feedback kommt. "
-            "Richtig geführt ist das ein starker Performance-Motor – falsch geführt entsteht Fremdsteuerung."
-        ),
-        "lead": "Führung/Steuerung: klare Maßstäbe, sachliches Feedback, Vergleich kontrolliert einsetzen."
     },
     "E": {
         "name": "Kontrollmodus",
+        "label": "Steuerungs-Performer",
+        "hint": "Du performst maximal, wenn Verantwortung klar bei dir liegt.",
+        "explain": "Übernimmt Verantwortung, denkt steuernd, behält Überblick. Führung: Verantwortung abgrenzen, Delegation trainieren.",
         "headline": "Ich übernehme Verantwortung – und behalte den Überblick.",
-        "explain": (
-            "Du willst Verantwortung, Einfluss und klare Steuerung. "
-            "Du kannst Führung stabil machen – Risiko ist Mikromanagement oder zu viel allein tragen."
-        ),
-        "lead": "Führung/Steuerung: Verantwortung abgrenzen, Delegation trainieren, Ergebnis statt Detail kontrollieren."
     },
 }
 
-# FUNKTIONSTEXTE fürs PDF: Top / Low / Steuerung (Report-Qualität)
-# Wichtig: Das sind die Bausteine, die pro Kategorie individuell gezogen werden.
-FUNCTION_TEXT: Dict[str, Dict[str, str]] = {
+# ============================================================
+# MEANING CARDS (Web-Ergebnis + PDF Seite 4)
+# Top-Hebel / Reibungszone / Steuerung – kurz & knackig
+# ============================================================
+MEANING_CARDS: Dict[str, Dict[str, str]] = {
     "DST": {
-        "what": "Wie du unter Belastung funktionierst: Druck aktiviert dich – oder frisst Zugriff.",
-        "top": "Unter Druck bleibst du handlungsfähig, priorisierst klar und kannst Leistung abrufen, wenn es zählt.",
-        "low": "Wenn Druck steigt, sinkt Zugriff/Fokus schneller. Risiko: Blockade, Vermeidung, inkonsistente Leistung in Peak-Momenten.",
-        "steer": "Steuerung: Druck dosieren, klare Peak-Fenster definieren, Erholung als festen Bestandteil planen."
+        "top":   "Du kannst unter Druck Leistung abrufen, Prioritäten setzen und handlungsfähig bleiben – das ist ein echter Peak-Hebel, wenn es zählt.",
+        "low":   "Wenn der Druck steigt, sinkt dein Zugriff schneller: Fokus bricht, Entscheidungen werden schwerer oder du gehst in Vermeidung – Leistung wird inkonsistent.",
+        "steer": "Druck bewusst dosieren, klare Belastungs-/Erholungsphasen, kurze klare Prioritäten (1–3).",
     },
     "STR": {
-        "what": "Wie sehr Struktur deine Performance stabilisiert.",
-        "top": "Klare Abläufe, Standards und Prioritäten geben dir Ruhe und Konstanz – du bleibst sauber, zuverlässig und stabil.",
-        "low": "Unklare Zuständigkeiten/chaotische Abläufe kosten Energie, erhöhen Fehlerquote und machen Entscheidungen schwerer.",
-        "steer": "Steuerung: Standards + Routinen + klare Zuständigkeiten schriftlich definieren."
+        "top":   "Klare Ordnung stabilisiert dich: Abläufe, Prioritäten und Zuständigkeiten geben Ruhe – du bleibst sauber und zuverlässig, auch wenn es unruhig wird.",
+        "low":   "Ohne Struktur verlierst du unnötig Leistung: Chaos, Unklarheit und wechselnde Prioritäten kosten Energie und erhöhen Fehlerquote.",
+        "steer": "Klare Standards + feste Routinen + Zuständigkeiten schriftlich (wer entscheidet was).",
     },
     "MAC": {
-        "what": "Wie stark du Verantwortung/Einfluss suchst – und darüber Leistung abrufst.",
-        "top": "Du übernimmst Ownership, entscheidest und steuerst. Das ist ein Leadership-Hebel in Leistungssystemen.",
-        "low": "Du wartest eher auf Vorgaben: Verantwortung bleibt diffus, Entscheidungen verzögern sich, Ownership sinkt.",
-        "steer": "Steuerung: Entscheidungsspielräume definieren, Verantwortung eindeutig zuordnen, Ownership trainieren."
+        "top":   "Du nimmst Verantwortung und Einfluss aktiv – du gehst voran, entscheidest, steuerst. Das ist ein Leadership-Hebel in Leistungssystemen.",
+        "low":   "Du wartest eher auf Vorgaben: Verantwortung bleibt diffus, Einfluss wird verschenkt – dadurch entstehen Verzögerung, Unklarheit und weniger Ownership.",
+        "steer": "Verantwortung klar definieren (Scope), Entscheidungsspielräume festlegen, Ownership trainieren.",
     },
     "KON": {
-        "what": "Wie sehr Leistung durch soziale Rückkopplung beeinflusst wird.",
-        "top": "Austausch/Sparring erhöht deine Klarheit, Leistungsstabilität und Entscheidungsqualität.",
-        "low": "Ohne Anschluss/Feedback kippt Stabilität schneller: Isolation, weniger Korrektur, weniger Energie/Drive.",
-        "steer": "Steuerung: Kommunikationsdichte festlegen (z.B. 1–2 feste Sparring-Slots pro Woche)."
+        "top":   "Austausch und soziale Rückkopplung erhöhen deine Leistung: du wirst klarer, stabiler und abrufbarer durch Kommunikation und Sparring.",
+        "low":   "Ohne sozialen Anschluss kippt Leistung schneller: du isolierst dich, verlierst Feedback-Klarheit oder Energie – Entscheidungen werden enger.",
+        "steer": "Kommunikationsdichte bewusst festlegen (z.B. 1 Sparring-Slot/Tag oder/Woche).",
     },
     "MOR": {
-        "what": "Wie stark Werte/Prinzipien deine Entscheidungskraft stabilisieren.",
-        "top": "Wenn Entscheidungen zu deinen Werten passen, wirst du ruhiger, klarer und leistungsstärker.",
-        "low": "Wertekonflikte kosten Leistung: innere Unruhe, Grübeln, inkonsistente Entscheidungen.",
-        "steer": "Steuerung: 3 Kernwerte + No-Go-Liste definieren, Konflikte früh benennen."
+        "top":   "Werte geben dir innere Ruhe und Richtung: du entscheidest klarer, wenn es zu deinen Prinzipien passt – Integrität wird zur Leistungskraft.",
+        "low":   "Wertekonflikte kosten Leistung: innere Unruhe, Grübeln oder inkonsistente Entscheidungen – Energie geht in Konflikt statt in Umsetzung.",
+        "steer": "3 Kernwerte definieren + No-Go-Liste; Konflikte früh benennen statt wegdrücken.",
     },
     "IND": {
-        "what": "Wie viel Freiheit du brauchst, um maximal zu liefern.",
-        "top": "Autonomie erzeugt Performance: du lieferst kreative Lösungen, Eigenständigkeit und hohen Output.",
-        "low": "Zu enge Vorgaben drücken Leistung: Passivität, Abwarten oder Dienst-nach-Vorschrift statt Impact.",
-        "steer": "Steuerung: Ziel klar, Weg offen – aber Outcomes messbar machen."
+        "top":   "Freiheit erzeugt Performance: wenn du gestalten darfst, lieferst du kreative Lösungen, Eigenständigkeit und hohen Output.",
+        "low":   "Zu wenig Autonomie drückt Leistung: du wirst passiver, wartest eher ab oder lieferst „Dienst nach Vorschrift" statt echten Impact.",
+        "steer": "Freiheitsgrade klar definieren (Ziel klar, Weg offen) – aber Outcome messbar machen.",
     },
     "AKT": {
-        "what": "Wie stark Tempo/Umsetzung deine Leistungsfähigkeit treibt.",
-        "top": "Du erzeugst Momentum: du kommst ins Tun, triffst Entscheidungen über Handlung und ziehst durch.",
-        "low": "Wenn Dynamik fehlt, startest du zu spät: du bleibst zu lange im Kopf und kommst schwer in Umsetzung.",
-        "steer": "Steuerung: Timeboxing, Start-Ritual (5 Minuten), kleine erste Schritte statt Perfektion."
+        "top":   "Tempo ist dein Motor: du kommst ins Tun, erzeugst Momentum und ziehst Umsetzung durch – Entscheidung folgt oft aus Handlung.",
+        "low":   "Wenn Dynamik fehlt, wird's zäh: du bleibst zu lange im Kopf, wartest ab oder kommst schwer in Umsetzung – Leistung startet zu spät.",
+        "steer": "Start-Ritual (5 Minuten), kleine erste Schritte, Timeboxing statt Perfektion.",
     },
     "INF": {
-        "what": "Analyse vs. Intuition: wie du über Verständnis Leistung stabilisierst.",
-        "top": "Du triffst bessere Entscheidungen, wenn du Zusammenhänge siehst – Stabilität über Klarheit.",
-        "low": "Zu wenig Klarheit führt zu Zögern/Fehlgriffen. Risiko: Bauchgefühl ohne Basis oder Overthinking ohne Abschluss.",
-        "steer": "Steuerung: 2–3 Pflichtinfos pro Entscheidung, Info-Dosis bewusst begrenzen."
+        "top":   "Du lieferst über Verständnis: wenn du Zusammenhänge siehst, triffst du bessere Entscheidungen und bleibst stabil – auch unter Druck.",
+        "low":   "Bei zu wenig Klarheit wird's wacklig: du zögerst, entscheidest zu intuitiv oder verhedderst dich – Risiko: Fehlgriffe oder Overthinking.",
+        "steer": "2–3 Pflichtinfos pro Entscheidung; Informationsmenge bewusst begrenzen oder erhöhen.",
     },
     "COM": {
-        "what": "Wie sehr Vergleich/Wettbewerb dich aktiviert.",
-        "top": "Benchmarks pushen dich: Standards steigen, Intensität steigt, du gehst in den Leistungsmodus.",
-        "low": "Ohne Vergleich fehlt oft Schärfe: Standards werden weicher, weniger Leistungs-Push von außen.",
-        "steer": "Steuerung: Referenzsystem (KPIs/Benchmarks) definieren – Vergleich kontrolliert & konstruktiv."
+        "top":   "Wettbewerb und Benchmarks pushen dich: du hebst Standards, erhöhst Intensität und gehst in den Leistungsmodus, wenn es messbar wird.",
+        "low":   "Ohne Vergleich fehlt der externe Push: du bleibst eher in Komfort oder Standards sind zu weich – Performance wird weniger „scharf".",
+        "steer": "Klare Referenzen setzen (KPIs/Benchmarks), aber Vergleich kontrolliert und konstruktiv nutzen.",
     },
     "AUF": {
-        "what": "Wie stark Feedback/Sichtbarkeit deine Leistung stabilisiert.",
-        "top": "Rückmeldung stabilisiert dich: du bleibst konsequent, abrufbar, präzise.",
-        "low": "Ohne Feedback wirst du unsichtbarer/unklarer. Risiko: Unterkommunikation, weniger Korrektur, weniger Präzision.",
-        "steer": "Steuerung: Feedback-Frequenz festlegen (z.B. 1 Review/Woche) und aktiv einfordern."
+        "top":   "Feedback und Sichtbarkeit stabilisieren deine Leistung: du ziehst Energie aus Rückmeldung und kannst dadurch konsequent abrufen.",
+        "low":   "Ohne Feedback verlierst du Orientierung: du unterkommunizierst, wirst unsichtbar oder holst dir keine Korrektur – Leistung wird weniger präzise.",
+        "steer": "Feedbackfrequenz definieren (z.B. 1 Review/Woche), aktiv einfordern statt hoffen.",
     },
     "STA": {
-        "what": "Wie sehr Rolle/Position Anerkennung Leistung freisetzt.",
-        "top": "Klare Rolle/Position erhöht Anspruch, Sicherheit und sichtbaren Abruf von Leistung.",
-        "low": "Unklare Rolle erzeugt Reibung: zu wenig Raum, Unsichtbarkeit oder geringerer Abruf von Leistung.",
-        "steer": "Steuerung: Rolle definieren, Sichtbarkeit gezielt gestalten (Wirkung, nicht Ego)."
+        "top":   "Rolle und Position setzen Energie frei: klare Stellung gibt Sicherheit – du zeigst Leistung sichtbarer und mit mehr Anspruch.",
+        "low":   "Wenn Rolle/Status unklar ist, entsteht Reibung: du bleibst zu unsichtbar oder nimmst weniger Raum ein – Leistung wird nicht „abgerufen".",
+        "steer": "Rolle klar definieren, Sichtbarkeit gezielt steuern (nicht Ego, sondern Wirkung).",
     },
 }
+
+# ============================================================
+# KATEGORIE-TEXTE (PDF: pro Funktion eine Doppelseite)
+# Struktur: title, worum, hoch, mittel, niedrig, praxis, merksatz
+# ============================================================
+CATEGORY_TEXT: Dict[str, Dict[str, Any]] = {
+    "DST": {
+        "title": "LEISTUNGSMODUS UNTER BELASTUNG",
+        "worum": [
+            "Diese Funktion entscheidet nicht, wie leistungsfähig du sein könntest –",
+            "sondern ob du Leistung abrufst, wenn es wirklich zählt.",
+            "",
+            "Zeitdruck.",
+            "Erwartung.",
+            "Bewertung.",
+            "Risiko.",
+            "",
+            "Genau dort trennt sich Vorbereitung von Performance.",
+            "",
+            "Der Leistungsmodus unter Belastung beschreibt, wie dein System reagiert,",
+            "wenn die äußeren Bedingungen enger werden –",
+            "und ob du dann klarer wirst oder enger.",
+            "",
+            "Nicht im Training.",
+            "Nicht im Kopf.",
+            "Sondern im Moment der Entscheidung.",
+        ],
+        "hoch": [
+            "Druck aktiviert dich.",
+            "Er macht dich klarer, nicht hektischer.",
+            "Du bleibst handlungsfähig, während andere anfangen zu zweifeln.",
+            "",
+            "Typische Wirkung bei hoher Ausprägung:",
+            "• Du priorisierst schneller",
+            "• Du triffst Entscheidungen auch ohne vollständige Sicherheit",
+            "• Du hältst Fokus, während andere Tempo verlieren",
+            "• Du kannst Leistung nicht nur vorbereiten, sondern abrufen",
+            "",
+            "Das ist ein echter Peak-Hebel.",
+            "Denn genau hier entstehen Führung, Dominanz und Verlässlichkeit.",
+            "",
+            "Wichtig:",
+            "Diese Stärke wirkt nicht automatisch –",
+            "sie wirkt dann maximal, wenn du Druck bewusst dosierst",
+            "und nicht permanent im Hochlastmodus bleibst.",
+        ],
+        "mittel": [
+            "Leistung ist unter Druck möglich, aber nicht stabil.",
+            "Manche Situationen pushen – andere überfahren.",
+            "",
+            "Typisch:",
+            "• Zu viel gleichzeitig",
+            "• Tempoverlust bei Unklarheit",
+            "• Wechsel zwischen Aktionismus und Blockade",
+            "",
+            "Der Schlüssel hier ist nicht mehr Disziplin,",
+            "sondern bessere Drucksteuerung.",
+        ],
+        "niedrig": [
+            "Steigender Druck senkt den Zugriff.",
+            "Entscheidungen werden schwerer, nicht klarer.",
+            "Leistung wird inkonsistent – genau dann, wenn sie gebraucht wird.",
+            "",
+            "Nicht, weil Kompetenz fehlt.",
+            "Sondern weil das System Schutz sucht, statt Output zu liefern.",
+        ],
+        "praxis": [
+            "Vor Belastung: Maximal 1–3 klare Prioritäten festlegen – nie mehr. Druck braucht Richtung, keine To-do-Wolke.",
+            "Nach Belastung: Kurzer Reset als Standard (Bewegung, Atmung, Wasser – kein Scrollen, kein Grübeln).",
+            "Im Druck: Fokus auf die nächste saubere Aktion, nicht auf das „große Ganze"."
+        ],
+        "merksatz": "Leistung unter Druck ist kein Talent. Sie ist das Ergebnis von klarer Priorisierung, bewusster Steuerung und der Fähigkeit, im Moment zu entscheiden.",
+    },
+    "STR": {
+        "title": "ENTSCHEIDUNGSSTABILITÄT & ORDNUNG",
+        "worum": [
+            "Diese Funktion entscheidet nicht, ob du intelligent bist –",
+            "sondern ob du in Unruhe sauber entscheiden kannst.",
+            "",
+            "Unklarheit.",
+            "zu viele Baustellen.",
+            "wechselnde Prioritäten.",
+            "",
+            "Hier verlieren viele nicht wegen fehlender Kompetenz –",
+            "sondern weil ihnen ein System fehlt.",
+            "",
+            "Entscheidungsstabilität & Ordnung beschreibt,",
+            "ob Struktur dich stabilisiert –",
+            "oder ob Chaos dir unbemerkt Leistung abzieht.",
+        ],
+        "hoch": [
+            "Struktur beruhigt dich nicht nur – sie macht dich gefährlich effizient.",
+            "Du bleibst klar, weil du Ordnung in Entscheidungen bringst.",
+            "",
+            "Typische Wirkung bei hoher Ausprägung:",
+            "• Du priorisierst sauber statt hektisch",
+            "• Du triffst Entscheidungen nach Standards – nicht nach Stimmung",
+            "• Du arbeitest stabil, auch wenn außen Lärm ist",
+            "• Du verlierst wenig Energie an Chaos",
+            "",
+            "Das ist ein Elite-Hebel.",
+            "Denn Struktur ist nicht „Organisation" –",
+            "Struktur ist Zugriff.",
+        ],
+        "mittel": [
+            "Du kannst strukturiert sein – aber nicht konstant.",
+            "Manchmal läuft es über Standards.",
+            "Manchmal frisst dich Unordnung.",
+            "",
+            "Typisch:",
+            "• Du startest stark – verlierst aber Richtung",
+            "• Du wechselst zu oft die Priorität",
+            "• Du bist im Kopf organisiert – aber nicht im System",
+            "",
+            "Der Schlüssel ist nicht mehr Druck,",
+            "sondern ein klarer Standard, der täglich greift.",
+        ],
+        "niedrig": [
+            "Chaos kostet dich unnötig Leistung.",
+            "Nicht dramatisch – aber konstant.",
+            "",
+            "Typisch:",
+            "• Entscheidungen dauern zu lange",
+            "• Umsetzung beginnt zu spät",
+            "• Energie geht in Sortieren statt in Liefern",
+            "",
+            "Nicht, weil du schwach bist.",
+            "Sondern weil du ohne Ordnung zu viel im Kopf tragen musst.",
+        ],
+        "praxis": [
+            "Täglich: 3 Prioritäten. Nicht mehr. Wenn alles wichtig ist, ist nichts klar.",
+            "Standards schriftlich: Wer entscheidet was – bis wann? Unklarheit ist Leistungsverlust.",
+            "Start- und Abschlussritual: Beginnen mit Fokus, beenden mit Review. Ordnung entsteht nicht zufällig."
+        ],
+        "merksatz": "Struktur ist kein Selbstzweck. Sie ist das, was Leistung unter Unruhe stabil macht.",
+    },
+    "MAC": {
+        "title": "VERANTWORTUNGS- & EINFLUSSORIENTIERUNG",
+        "worum": [
+            "Diese Funktion entscheidet nicht, ob du motiviert bist –",
+            "sondern ob du Ownership nimmst, wenn Richtung fehlt.",
+            "",
+            "Verantwortung heißt:",
+            "nicht warten, bis jemand entscheidet.",
+            "sondern die Entscheidung führen.",
+            "",
+            "Diese Kategorie zeigt,",
+            "ob Einfluss dich aktiviert –",
+            "oder ob du lieber im Ausführen bleibst.",
+        ],
+        "hoch": [
+            "Verantwortung setzt Energie frei.",
+            "Du willst steuern, gestalten, entscheiden.",
+            "",
+            "Typische Wirkung bei hoher Ausprägung:",
+            "• Du übernimmst Ownership statt Ausreden",
+            "• Du triffst Entscheidungen, wenn andere noch diskutieren",
+            "• Du willst Wirkung – nicht nur Arbeit",
+            "• Du hältst Systeme stabil, weil du Verantwortung trägst",
+            "",
+            "Das ist Leadership in Reinform.",
+            "Nicht Position – sondern Verhalten.",
+        ],
+        "mittel": [
+            "Du kannst Verantwortung übernehmen – aber nicht immer automatisch.",
+            "Manchmal gehst du voran.",
+            "Manchmal wartest du auf Autorität.",
+            "",
+            "Typisch:",
+            "• Du übernimmst, wenn du dich sicher fühlst",
+            "• Du zögerst, wenn Scope unklar ist",
+            "• Du lässt Entscheidungen liegen, wenn niemand sie dir gibt",
+            "",
+            "Der Schlüssel ist klare Verantwortungsdefinition –",
+            "damit du nicht in Unklarheit hängen bleibst.",
+        ],
+        "niedrig": [
+            "Ownership ist nicht dein Trigger.",
+            "Du wartest eher auf Vorgaben oder klare Führung.",
+            "",
+            "Typisch:",
+            "• Du lieferst gut – aber du steuerst wenig",
+            "• Entscheidungen bleiben in der Luft",
+            "• Einfluss wird verschenkt",
+            "",
+            "Nicht, weil dir Stärke fehlt.",
+            "Sondern weil Verantwortung nicht sauber bei dir landet.",
+        ],
+        "praxis": [
+            "Scope definieren: Was ist mein Bereich – und was nicht? Ohne Scope keine klare Verantwortung.",
+            "Entscheidungsspielraum festlegen: „Ich entscheide bis X / bis Datum Y" – sonst wird's schwammig.",
+            "Ownership täglich: Eine Sache aktiv abschließen, statt sie „zu parken"."
+        ],
+        "merksatz": "Einfluss ist kein Status. Einfluss ist die Fähigkeit, Verantwortung zu führen, bevor es jemand verlangt.",
+    },
+    "KON": {
+        "title": "SOZIALE STEUERUNG & ANSCHLUSSFÄHIGKEIT",
+        "worum": [
+            "Diese Funktion entscheidet nicht, ob du „menschenfreundlich" bist –",
+            "sondern ob Kontakt deine Leistung verstärkt oder verwässert.",
+            "",
+            "Feedback.",
+            "Sparring.",
+            "Teamdynamik.",
+            "",
+            "Hier entsteht entweder Klarheit –",
+            "oder Ablenkung.",
+            "",
+            "Diese Kategorie zeigt,",
+            "ob du über Austausch stabiler wirst –",
+            "oder ob du in Autonomie am stärksten bist.",
+        ],
+        "hoch": [
+            "Kontakt ist bei dir kein Smalltalk.",
+            "Kontakt ist Performance.",
+            "",
+            "Typische Wirkung bei hoher Ausprägung:",
+            "• Gespräche machen dich klarer",
+            "• Feedback stabilisiert deinen Fokus",
+            "• Du wirst besser durch Sparring",
+            "• Du ziehst Energie aus einem leistungsstarken Umfeld",
+            "",
+            "Das ist ein starker Hebel –",
+            "wenn du ihn bewusst nutzt und nicht jedem Input die Führung gibst.",
+        ],
+        "mittel": [
+            "Du kannst über Austausch wachsen – aber nicht immer.",
+            "Manchmal macht Kontakt dich stärker.",
+            "Manchmal kostet er dich Fokus.",
+            "",
+            "Typisch:",
+            "• Du holst Feedback, aber zu unstrukturiert",
+            "• Du bist offen, aber manchmal zu beeinflusst",
+            "• Du wechselst zwischen Rückzug und Over-Contact",
+            "",
+            "Der Schlüssel ist Kommunikationsdichte bewusst zu steuern –",
+            "nicht nach Gefühl.",
+        ],
+        "niedrig": [
+            "Du bist sehr autonom.",
+            "Du brauchst wenig Kontakt, um zu liefern.",
+            "",
+            "Das kann Stärke sein –",
+            "Risiko ist Isolation.",
+            "",
+            "Typisch:",
+            "• Du holst zu wenig Korrektur",
+            "• Du bleibst unsichtbar, obwohl du Leistung bringst",
+            "• Du trägst zu viel allein im Kopf",
+        ],
+        "praxis": [
+            "Sparring fix: 1 Termin pro Woche, klarer Zweck, klare Fragen – Feedback wird geführt, nicht gesucht.",
+            "Input filtern: Nicht jeder Rat ist relevant. Nur Feedback von Menschen mit Standard.",
+            "Kontakt dosieren: Austausch als Hebel – nicht als Flucht vor Entscheidung."
+        ],
+        "merksatz": "Kontakt ist dann ein Hebel, wenn er Klarheit erzeugt – nicht wenn er deine Entscheidung ersetzt.",
+    },
+    "MOR": {
+        "title": "WERTE-STABILITÄT & INNERE ENTSCHEIDUNGSGRENZEN",
+        "worum": [
+            "Diese Funktion entscheidet nicht, ob du „moralisch" bist –",
+            "sondern ob du unter Druck eine klare innere Linie hast.",
+            "",
+            "Werte sind keine Worte.",
+            "Werte sind Grenzen.",
+            "",
+            "Diese Kategorie zeigt,",
+            "ob du mit Integrität ruhiger wirst –",
+            "oder ob innere Konflikte dir Leistung ziehen.",
+        ],
+        "hoch": [
+            "Du entscheidest klarer, wenn Dinge zu deinen Prinzipien passen.",
+            "Du verlierst weniger Energie an innere Diskussion.",
+            "",
+            "Typische Wirkung bei hoher Ausprägung:",
+            "• Du hast eine klare Linie",
+            "• Du kannst „Nein" sagen ohne Drama",
+            "• Du bleibst stabil, weil du weißt wofür du stehst",
+            "• Integrität macht dich leistungsfähig",
+            "",
+            "Das ist ein Elite-Vorteil –",
+            "weil du unter Druck weniger inneren Lärm hast.",
+        ],
+        "mittel": [
+            "Du hast Werte – aber sie sind nicht immer scharf geführt.",
+            "Manchmal bist du klar.",
+            "Manchmal bist du zu flexibel.",
+            "",
+            "Typisch:",
+            "• Du passt dich an, auch wenn es dich innerlich kostet",
+            "• Du rechtfertigst Entscheidungen zu lange",
+            "• Du spürst Unruhe, aber benennst sie nicht",
+            "",
+            "Der Schlüssel ist Klarheit: Was ist No-Go – und warum?",
+        ],
+        "niedrig": [
+            "Flexibilität ist hoch – aber Grenzen sind weich.",
+            "Das kann Anpassungsfähigkeit sein –",
+            "Risiko ist Beliebigkeit.",
+            "",
+            "Typisch:",
+            "• Innere Unruhe bei Entscheidungen",
+            "• Du verlierst Energie an Grübeln",
+            "• Du driftest, wenn Druck kommt",
+        ],
+        "praxis": [
+            "3 Kernwerte + 3 No-Gos schriftlich. Kurz. Hart. Ohne Poesie.",
+            "Konflikte früh benennen: Was passt nicht? Was kostet Leistung?",
+            "Entscheidungen sauber machen: weniger Rechtfertigung, mehr Linie."
+        ],
+        "merksatz": "Werte sind nicht Deko. Werte sind das, was dich unter Druck stabil hält, wenn alles wackelt.",
+    },
+    "IND": {
+        "title": "AUTONOMIE- & GESTALTUNGSMODUS",
+        "worum": [
+            "Diese Funktion entscheidet nicht, ob du „freiheitsliebend" bist –",
+            "sondern ob Freiheit bei dir Leistung freisetzt oder Fokus frisst.",
+            "",
+            "Manche liefern mit Struktur.",
+            "Andere liefern mit Spielraum.",
+            "",
+            "Diese Kategorie zeigt,",
+            "ob du über Gestaltungsfreiheit besser wirst –",
+            "oder ob du über klare Führung stabiler bist.",
+        ],
+        "hoch": [
+            "Freiheit macht dich nicht chaotisch –",
+            "Freiheit macht dich produktiv.",
+            "",
+            "Typische Wirkung bei hoher Ausprägung:",
+            "• Du entwickelst Lösungen statt nur Schritte abzuarbeiten",
+            "• Du lieferst besser ohne Micromanagement",
+            "• Du denkst in Möglichkeiten und Output",
+            "• Du bringst eigene Wege, ohne den Zielrahmen zu verlieren",
+            "",
+            "Das ist ein starker Hebel –",
+            "wenn Ziel und Outcome glasklar sind.",
+        ],
+        "mittel": [
+            "Du kannst mit Freiheit umgehen – aber nicht unbegrenzt.",
+            "Zu wenig Spielraum bremst dich.",
+            "Zu viel Spielraum zerstreut dich.",
+            "",
+            "Typisch:",
+            "• Du brauchst Leitplanken, aber keine Detailsteuerung",
+            "• Du performst, wenn Ziele klar sind",
+            "• Du verlierst Fokus, wenn niemand Outcome definiert",
+        ],
+        "niedrig": [
+            "Du bist systemtreuer.",
+            "Du wirst besser, wenn Vorgaben klar sind.",
+            "",
+            "Risiko:",
+            "Wenn niemand führt, wirst du passiver.",
+            "Nicht aus Faulheit –",
+            "sondern weil dir der Rahmen fehlt, der Zugriff gibt.",
+        ],
+        "praxis": [
+            "Freiheitsgrad definieren: Ziel fix, Weg offen – oder Weg fix, Ziel messbar. Nicht beides offen.",
+            "Outcome-Kriterien schriftlich: Was ist „fertig"? Was ist „gut"?",
+            "Timeboxing: Freiheit braucht Zeitfenster, sonst frisst sie Fokus."
+        ],
+        "merksatz": "Autonomie ist dann ein Hebel, wenn sie geführt ist: Ziel klar, Spielraum bewusst.",
+    },
+    "AKT": {
+        "title": "ENERGIE- & HANDLUNGSDYNAMIK",
+        "worum": [
+            "Diese Funktion entscheidet nicht, ob du „fleißig" bist –",
+            "sondern ob du Zugriff über Handlung bekommst.",
+            "",
+            "Manche gewinnen Klarheit durch Denken.",
+            "Andere gewinnen Klarheit durch Bewegung.",
+            "",
+            "Diese Kategorie zeigt,",
+            "ob Tempo bei dir Momentum erzeugt –",
+            "oder ob du eher über Ruhe stabil bleibst.",
+        ],
+        "hoch": [
+            "Tempo ist bei dir kein Stress –",
+            "Tempo ist dein Zündschlüssel.",
+            "",
+            "Typische Wirkung bei hoher Ausprägung:",
+            "• Du kommst schnell ins Tun",
+            "• Du baust Momentum auf",
+            "• Du entscheidest oft besser in Bewegung",
+            "• Du ziehst Dinge durch, statt sie zu zerdenken",
+            "",
+            "Das ist ein Performance-Vorteil –",
+            "wenn du Push und Brake bewusst steuerst.",
+        ],
+        "mittel": [
+            "Du kannst Tempo machen – aber nicht immer stabil.",
+            "Manchmal bist du schnell.",
+            "Manchmal bleibst du hängen.",
+            "",
+            "Typisch:",
+            "• Start fällt schwer, wenn die Aufgabe groß wirkt",
+            "• Du bist gut im Sprint, aber inkonsistent im Rhythmus",
+            "• Du wechselst zwischen Aktionismus und Warten",
+        ],
+        "niedrig": [
+            "Du bist reflektierter – und oft langsamer im Start.",
+            "Das kann Qualität bringen.",
+            "",
+            "Risiko:",
+            "Du kommst zu spät in Umsetzung.",
+            "Nicht, weil du nicht kannst –",
+            "sondern weil du zu lange im Kopf bleibst.",
+        ],
+        "praxis": [
+            "5-Minuten-Kickstart: kleinster Schritt, sofort. Nicht diskutieren.",
+            "Version 1 liefern: Momentum vor Perfektion. Danach schärfen.",
+            "Push/Brake setzen: bewusst beschleunigen – bewusst stoppen, bevor es kippt."
+        ],
+        "merksatz": "Tempo ist ein Hebel – aber nur, wenn du es führst. Sonst führt es dich.",
+    },
+    "INF": {
+        "title": "VERARBEITUNGS- & ENTSCHEIDUNGSMODUS",
+        "worum": [
+            "Diese Funktion entscheidet nicht, ob du rational bist –",
+            "sondern wie du Sicherheit für Entscheidungen erzeugst.",
+            "",
+            "Information kann Klarheit sein.",
+            "Oder ein Versteck.",
+            "",
+            "Diese Kategorie zeigt,",
+            "ob du über Verständnis stabil wirst –",
+            "oder ob du schneller über Intuition performst.",
+        ],
+        "hoch": [
+            "Du wirst stabil, wenn du Zusammenhänge siehst.",
+            "Du triffst bessere Entscheidungen, wenn die Lage klar ist.",
+            "",
+            "Typische Wirkung bei hoher Ausprägung:",
+            "• Du denkst strukturiert",
+            "• Du erkennst Muster",
+            "• Du triffst Entscheidungen fundiert",
+            "• Du bleibst ruhiger, weil Fakten dir Zugriff geben",
+            "",
+            "Wichtig:",
+            "Der Hebel kippt, wenn Analyse zur Verzögerung wird.",
+        ],
+        "mittel": [
+            "Du brauchst etwas Klarheit – aber nicht alles.",
+            "Manchmal analysierst du gut.",
+            "Manchmal entscheidest du zu schnell oder zu spät.",
+            "",
+            "Typisch:",
+            "• Du willst Sicherheit, aber verlierst dich gelegentlich",
+            "• Du sammelst zu viel, wenn Druck steigt",
+            "• Du gehst in Bauchgefühl, wenn Infos fehlen",
+        ],
+        "niedrig": [
+            "Du bist intuitiver.",
+            "Du entscheidest schneller ohne viel Datenlage.",
+            "",
+            "Das kann mutig und schnell sein –",
+            "Risiko sind Fehlgriffe oder blinde Flecken,",
+            "wenn Mindest-Klarheit fehlt.",
+        ],
+        "praxis": [
+            "2–3 Pflichtinfos definieren. Nicht 20. Dann entscheiden.",
+            "Analyse-Timer: Entscheidung bekommt ein Zeitfenster – sonst wirst du geführt.",
+            "Pre-Mortem: „Was wäre der größte Fehler – und wie verhindern wir ihn?""
+        ],
+        "merksatz": "Information ist dann Stärke, wenn sie zu Entscheidung führt – nicht wenn sie Entscheidung ersetzt.",
+    },
+    "COM": {
+        "title": "VERGLEICHS- & LEISTUNGSREFERENZ",
+        "worum": [
+            "Diese Funktion entscheidet nicht, ob du ehrgeizig bist –",
+            "sondern ob Vergleich dich schärft oder dich steuert.",
+            "",
+            "Benchmarks können Standards erhöhen.",
+            "Oder Fokus zerstören.",
+            "",
+            "Diese Kategorie zeigt,",
+            "wie stark Wettbewerb, Messbarkeit und Referenzen",
+            "deinen Leistungsmodus aktivieren.",
+        ],
+        "hoch": [
+            "Vergleich schärft dich.",
+            "Wenn es messbar wird, wirst du wach.",
+            "",
+            "Typische Wirkung bei hoher Ausprägung:",
+            "• Standards steigen, Intensität steigt",
+            "• Du gehst in den Leistungsmodus, wenn es zählt",
+            "• Du willst messen statt hoffen",
+            "• Du lieferst stärker, wenn Rahmen klar ist",
+            "",
+            "Wichtig:",
+            "Vergleich ist ein Werkzeug – kein Boss.",
+        ],
+        "mittel": [
+            "Wettbewerb kann dich pushen – aber nicht konstant.",
+            "Manchmal aktiviert er dich.",
+            "Manchmal lenkt er dich ab.",
+            "",
+            "Typisch:",
+            "• Du nutzt Benchmarks, aber nicht sauber",
+            "• Du wirst phasenweise getrieben",
+            "• Du verlierst Fokus, wenn der Vergleich toxisch wird",
+        ],
+        "niedrig": [
+            "Du bist weniger wettbewerbsgetrieben.",
+            "Das kann Stabilität geben.",
+            "",
+            "Risiko:",
+            "Zu wenig externe Reibung.",
+            "Standards bleiben weich.",
+            "Potenzial wird nicht maximal herausgefordert.",
+        ],
+        "praxis": [
+            "1 Benchmark wählen. Nicht zehn. Klarer Maßstab, klare Richtung.",
+            "Vergleich dosieren: Phasenweise – nicht permanent.",
+            "Scoreboard für Entwicklung: Fortschritt sichtbar machen, nicht Ego füttern."
+        ],
+        "merksatz": "Vergleich ist dann Elite, wenn er Standards erhöht – ohne dich emotional zu steuern.",
+    },
+    "AUF": {
+        "title": "SICHTBARKEITS- & FEEDBACKABHÄNGIGKEIT",
+        "worum": [
+            "Diese Funktion entscheidet nicht, ob du Aufmerksamkeit magst –",
+            "sondern ob Feedback bei dir Zugriff erzeugt oder Druck erzeugt.",
+            "",
+            "Resonanz kann Leistung stabilisieren.",
+            "Oder dich abhängig machen.",
+            "",
+            "Diese Kategorie zeigt,",
+            "wie stark Rückmeldung, Sichtbarkeit und Bewertung",
+            "deine Leistung beeinflussen.",
+        ],
+        "hoch": [
+            "Feedback ist bei dir Treibstoff.",
+            "Resonanz aktiviert Einsatzbereitschaft.",
+            "",
+            "Typische Wirkung bei hoher Ausprägung:",
+            "• Du lieferst stärker, wenn Rückmeldung klar ist",
+            "• Du ziehst Energie aus Sichtbarkeit",
+            "• Du wirst konsequenter, wenn du „gesehen" wirst",
+            "• Du reagierst sensibel auf Bewertung",
+            "",
+            "Wichtig:",
+            "Du musst Feedback führen – sonst führt Feedback dich.",
+        ],
+        "mittel": [
+            "Feedback kann dich pushen – aber du brauchst es nicht immer.",
+            "Manchmal ist es nützlich.",
+            "Manchmal lenkt es ab.",
+            "",
+            "Typisch:",
+            "• Du holst dir Rückmeldung, aber nicht systematisch",
+            "• Du bist robust, aber manchmal getriggert",
+            "• Du wirst inkonsistent, wenn Resonanz fehlt",
+        ],
+        "niedrig": [
+            "Du bist unabhängiger.",
+            "Du brauchst wenig Rückmeldung, um zu liefern.",
+            "",
+            "Das kann Stärke sein –",
+            "Risiko ist Unsichtbarkeit.",
+            "Du bringst Leistung – aber sie wird nicht abgerufen, weil sie keiner sieht.",
+        ],
+        "praxis": [
+            "Feedbackfrequenz definieren: 1 Review/Woche – aktiv einfordern, nicht hoffen.",
+            "Wirkung sichtbar machen: Ergebnisse kurz dokumentieren (sachlich, nicht ego).",
+            "Trennen: Feedback ist Information – kein Urteil über deinen Wert."
+        ],
+        "merksatz": "Feedback ist dann ein Hebel, wenn es Klarheit erzeugt – nicht wenn es deine Stabilität ersetzt.",
+    },
+    "STA": {
+        "title": "POSITIONS- & ANERKENNUNGSORIENTIERUNG",
+        "worum": [
+            "Diese Funktion entscheidet nicht, ob du Status willst –",
+            "sondern ob Rolle und Position dir Zugriff geben.",
+            "",
+            "Rolle kann Sicherheit sein.",
+            "Oder Druck.",
+            "",
+            "Diese Kategorie zeigt,",
+            "wie stark Anerkennung, Stellung und Rollen-Klarheit",
+            "deine Leistung freisetzen oder begrenzen.",
+        ],
+        "hoch": [
+            "Rolle aktiviert Leistung.",
+            "Wenn deine Position klar ist, steigt Anspruch und Präsenz.",
+            "",
+            "Typische Wirkung bei hoher Ausprägung:",
+            "• Du spielst stärker „auf Niveau", wenn Rahmen klar ist",
+            "• Du übernimmst Raum, wenn du legitimiert bist",
+            "• Du lieferst präsenter und konsequenter",
+            "• Du reagierst sensibel auf Status-Dynamiken",
+            "",
+            "Wichtig:",
+            "Status muss funktional bleiben – nicht emotional.",
+        ],
+        "mittel": [
+            "Rolle hilft – aber sie ist nicht alles.",
+            "Manchmal brauchst du Klarheit im System.",
+            "Manchmal bleibst du intrinsisch stabil.",
+            "",
+            "Typisch:",
+            "• Du willst Anerkennung, aber nicht um jeden Preis",
+            "• Du nimmst Raum, aber manchmal zu wenig",
+            "• Du schwankst zwischen Sichtbarkeit und Rückzug",
+        ],
+        "niedrig": [
+            "Du bist stärker intrinsisch.",
+            "Status ist kein großer Trigger.",
+            "",
+            "Risiko:",
+            "Du bleibst zu unsichtbar.",
+            "Nicht weil du klein bist –",
+            "sondern weil du dir nicht genug Raum gibst, obwohl du Wirkung hättest.",
+        ],
+        "praxis": [
+            "Rolle in 1 Satz definieren: „Ich bin verantwortlich für …" – Klarheit erzeugt Zugriff.",
+            "Wirkung sichtbar machen: Beitrag, Ergebnis, Verantwortung – kurz und sachlich.",
+            "Status funktional nutzen: Orientierung und Erwartung, nicht Ego."
+        ],
+        "merksatz": "Position ist dann ein Hebel, wenn sie Wirkung erhöht – nicht wenn sie dich steuert.",
+    },
+}
+
+# ============================================================
+# HELPER: Band-Einstufung (für PDF + Web)
+# ============================================================
+def get_band(pct: int) -> str:
+    """Gibt 'niedrig', 'mittel' oder 'hoch' zurück."""
+    if pct < 25:
+        return "niedrig"
+    if pct < 75:
+        return "mittel"
+    return "hoch"
+
+def get_band_label(pct: int) -> str:
+    """Gibt lesbares Band-Label mit Prozentbereich zurück."""
+    b = get_band(pct)
+    if b == "hoch":
+        return "hoch (75–100 %)"
+    if b == "mittel":
+        return "mittel (25–75 %)"
+    return "niedrig (0–25 %)"
