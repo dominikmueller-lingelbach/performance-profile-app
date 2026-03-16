@@ -4,15 +4,13 @@ import json
 from uuid import uuid4
 import os
 import requests
-
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse, JSONResponse, Response
 from fastapi.templating import Jinja2Templates
-
 from report_builder import build_report_data
 from pdf_report import build_pdf_report
 from db import init_db, save_report, load_report
-
+from report_content import FUNCTION_NAMES, TYPE_MAP, MEANING_CARDS
 
 # ============================================================
 # ENV
@@ -24,7 +22,6 @@ PUBLIC_BASE_URL = os.getenv(
     "http://127.0.0.1:8000"
 ).rstrip("/")
 
-
 # ============================================================
 # PATHS / APP
 # ============================================================
@@ -34,9 +31,17 @@ TEMPLATES_DIR = BASE_DIR / "templates"
 
 app = FastAPI()
 init_db()
-
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 
+# ============================================================
+# Content-Paket für das Frontend (wird als JSON injiziert)
+# Single Source of Truth: alles aus report_content.py
+# ============================================================
+FRONTEND_CONTENT = {
+    "function_names": FUNCTION_NAMES,
+    "type_map": TYPE_MAP,
+    "meaning_cards": MEANING_CARDS,
+}
 
 # ============================================================
 # HELPERS
@@ -45,7 +50,6 @@ def load_questions() -> List[Dict[str, Any]]:
     path = DATA_DIR / "questions.json"
     with path.open("r", encoding="utf-8") as f:
         return json.load(f)
-
 
 # ============================================================
 # ROUTES
@@ -58,43 +62,23 @@ async def home(request: Request):
         {"request": request, "questions": questions}
     )
 
-
 @app.get("/r/{report_id}", response_class=HTMLResponse)
 async def show_result(request: Request, report_id: str):
     payload = load_report(report_id)
     if not payload:
         return HTMLResponse("Report nicht gefunden.", status_code=404)
-
-    # ✅ Template bekommt ALLES, egal ob es data.*, result.* oder direkte Keys nutzt
     return templates.TemplateResponse(
         "results.html",
         {
             "request": request,
-
-            # Falls dein Template "data.xxx" nutzt:
             "data": payload,
-
-            # Falls dein Template "result.xxx" nutzt:
-            "result": payload,
-
-            # Falls dein Template direkte Variablen nutzt:
-            "report_id": payload.get("report_id"),
-            "result_url": payload.get("result_url"),
-            "name": payload.get("name"),
-            "email": payload.get("email"),
-            "profile_type": payload.get("profile_type"),
-            "ranked": payload.get("ranked"),
-            "percents": payload.get("percents"),
-            "sums": payload.get("sums"),
-            "avgs": payload.get("avgs"),
+            "content": FRONTEND_CONTENT,
         }
     )
-
 
 @app.post("/submit")
 async def submit(request: Request):
     payload = await request.json()
-
     name = (payload.get("name") or "").strip()
     email = (payload.get("email") or "").strip()
     answers = payload.get("answers") or {}
@@ -107,7 +91,6 @@ async def submit(request: Request):
 
     # ================== REPORT BERECHNEN ==================
     result = build_report_data(answers)
-
     report_id = str(uuid4())
     result_url = f"{PUBLIC_BASE_URL}/r/{report_id}"
 
@@ -124,7 +107,7 @@ async def submit(request: Request):
         "avgs": result.avgs,
     })
 
-    # ================== BREVO KONTAKT ERSTELLEN / UPDATEN ==================
+    # ================== BREVO KONTAKT ==================
     if BREVO_API_KEY and email:
         brevo_url = "https://api.brevo.com/v3/contacts"
         headers = {
@@ -132,7 +115,6 @@ async def submit(request: Request):
             "api-key": BREVO_API_KEY,
             "content-type": "application/json",
         }
-
         brevo_payload = {
             "email": email,
             "attributes": {
@@ -143,14 +125,8 @@ async def submit(request: Request):
             "listIds": [BREVO_LIST_ID],
             "updateEnabled": True
         }
-
         try:
-            r = requests.post(
-                brevo_url,
-                json=brevo_payload,
-                headers=headers,
-                timeout=10
-            )
+            r = requests.post(brevo_url, json=brevo_payload, headers=headers, timeout=10)
             print("BREVO status:", r.status_code)
             print("BREVO response:", r.text)
         except Exception as e:
@@ -165,7 +141,6 @@ async def submit(request: Request):
         "result_url": result_url
     })
 
-
 @app.get("/report/{report_id}.pdf")
 async def report_pdf(report_id: str):
     payload = load_report(report_id)
@@ -174,9 +149,7 @@ async def report_pdf(report_id: str):
             {"ok": False, "error": "Report nicht gefunden"},
             status_code=404
         )
-
     pdf_bytes = build_pdf_report(payload)
-
     return Response(
         content=pdf_bytes,
         media_type="application/pdf",
