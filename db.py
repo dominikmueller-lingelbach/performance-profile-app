@@ -14,47 +14,43 @@ if DATABASE_URL:
     # ============================================================
     # POSTGRESQL (Produktion auf Render + Supabase)
     # ============================================================
-    import psycopg2
-    from psycopg2.extras import RealDictCursor
+    import psycopg
 
     def _get_conn():
-        return psycopg2.connect(DATABASE_URL)
+        return psycopg.connect(DATABASE_URL)
 
     def init_db():
         with _get_conn() as con:
-            with con.cursor() as cur:
-                cur.execute("""
-                    CREATE TABLE IF NOT EXISTS reports (
-                        report_id TEXT PRIMARY KEY,
-                        payload_json TEXT NOT NULL,
-                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                    )
-                """)
+            con.execute("""
+                CREATE TABLE IF NOT EXISTS reports (
+                    report_id TEXT PRIMARY KEY,
+                    payload_json TEXT NOT NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
             con.commit()
 
     def save_report(report_id: str, payload: Dict[str, Any]):
         with _get_conn() as con:
-            with con.cursor() as cur:
-                cur.execute(
-                    """INSERT INTO reports (report_id, payload_json)
-                       VALUES (%s, %s)
-                       ON CONFLICT (report_id)
-                       DO UPDATE SET payload_json = EXCLUDED.payload_json""",
-                    (report_id, json.dumps(payload, ensure_ascii=False))
-                )
+            con.execute(
+                """INSERT INTO reports (report_id, payload_json)
+                   VALUES (%s, %s)
+                   ON CONFLICT (report_id)
+                   DO UPDATE SET payload_json = EXCLUDED.payload_json""",
+                (report_id, json.dumps(payload, ensure_ascii=False))
+            )
             con.commit()
 
     def load_report(report_id: str) -> Optional[Dict[str, Any]]:
         with _get_conn() as con:
-            with con.cursor() as cur:
-                cur.execute(
-                    "SELECT payload_json FROM reports WHERE report_id = %s",
-                    (report_id,)
-                )
-                row = cur.fetchone()
-                if not row:
-                    return None
-                return json.loads(row[0])
+            cur = con.execute(
+                "SELECT payload_json FROM reports WHERE report_id = %s",
+                (report_id,)
+            )
+            row = cur.fetchone()
+            if not row:
+                return None
+            return json.loads(row[0])
 
 else:
     # ============================================================
