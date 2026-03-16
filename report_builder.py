@@ -1,23 +1,18 @@
+# report_builder.py
+# ============================================================
+# Auswertungslogik: Berechnet Ergebnis aus Antworten
+# Importiert alle Texte/Namen aus report_content.py
+# ============================================================
+
 from dataclasses import dataclass
 from pathlib import Path
 import json
 
+from report_content import FUNCTION_NAMES, FUNCTION_ORDER
+
 BASE_DIR = Path(__file__).resolve().parent
 DATA_DIR = BASE_DIR / "data"
 
-FUNCTIONS = {
-  "DST": "Leistungsmodus unter Belastung",
-  "STR": "Entscheidungsstabilität & Ordnung",
-  "MAC": "Verantwortungs- & Einflussorientierung",
-  "KON": "Soziale Steuerung & Anschlussfähigkeit",
-  "MOR": "Werte-Stabilität & innere Entscheidungsgrenzen",
-  "IND": "Autonomie- & Gestaltungsmodus",
-  "AKT": "Energie- & Handlungsdynamik",
-  "INF": "Verarbeitungs- & Entscheidungsmodus",
-  "COM": "Vergleichs- & Leistungsreferenz",
-  "AUF": "Sichtbarkeits- & Feedbackabhängigkeit",
-  "STA": "Positions- & Anerkennungsorientierung",
-}
 
 @dataclass
 class ReportResult:
@@ -28,47 +23,38 @@ class ReportResult:
     avgs: dict            # function_id -> avg
     top_categories: list  # Top-3 Klartext-Namen
 
+
 def _load_questions():
     path = DATA_DIR / "questions.json"
     with path.open("r", encoding="utf-8") as f:
         return json.load(f)
 
+
 def decide_profile_type(p: dict) -> str:
-    # Schwellen: High >= 67, Low <= 33
-    def high(fid): return p.get(fid, 0) >= 67
-    def low(fid):  return p.get(fid, 0) <= 33
+    """
+    Gewichtetes Scoring statt harter Schwellen.
+    Berechnet für jeden der 5 Typen einen Score.
+    Der höchste Score gewinnt.
+    """
+    scores = {
+        # A Stabilitätsmodus: STR + MOR stark, wenig AKT
+        "A": 0.40 * p.get("STR", 0) + 0.40 * p.get("MOR", 0) + 0.20 * (100 - p.get("AKT", 0)),
 
-    # A Stabilitätsmodus: STR hoch, MOR hoch, DST nicht extrem niedrig
-    if high("STR") and high("MOR") and p.get("DST", 0) >= 40:
-        return "A"
+        # B Druckmodus: DST + AKT stark, wenig STR
+        "B": 0.40 * p.get("DST", 0) + 0.30 * p.get("AKT", 0) + 0.30 * (100 - p.get("STR", 0)),
 
-    # B Druckmodus: DST hoch, AKT hoch, STR niedrig
-    if high("DST") and high("AKT") and low("STR"):
-        return "B"
+        # C Gestaltungsmodus: IND + INF stark, mittlere STR
+        "C": 0.40 * p.get("IND", 0) + 0.35 * p.get("INF", 0) + 0.25 * (100 - p.get("STR", 0)),
 
-    # C Gestaltungsmodus: IND hoch, INF hoch, STR ok
-    if high("IND") and high("INF") and p.get("STR", 0) >= 40:
-        return "C"
+        # D Vergleichsmodus: COM + AUF + STA stark
+        "D": 0.35 * p.get("COM", 0) + 0.35 * p.get("AUF", 0) + 0.30 * p.get("STA", 0),
 
-    # D Vergleichsmodus: COM hoch, AUF hoch, STA hoch
-    if high("COM") and high("AUF") and high("STA"):
-        return "D"
+        # E Kontrollmodus: MAC + STR + INF stark
+        "E": 0.40 * p.get("MAC", 0) + 0.30 * p.get("STR", 0) + 0.30 * p.get("INF", 0),
+    }
 
-    # E Kontrollmodus: MAC hoch, STR hoch, INF hoch
-    if high("MAC") and high("STR") and high("INF"):
-        return "E"
+    return max(scores, key=scores.get)
 
-    # Fallback: Top-Treiber
-    top = max(p.items(), key=lambda x: x[1])[0]
-    if top in ["STR", "MOR"]:
-        return "A"
-    if top in ["DST", "AKT"]:
-        return "B"
-    if top in ["IND", "INF"]:
-        return "C"
-    if top in ["COM", "AUF", "STA"]:
-        return "D"
-    return "E"
 
 def build_report_data(answers: dict) -> ReportResult:
     questions = _load_questions()
@@ -81,8 +67,8 @@ def build_report_data(answers: dict) -> ReportResult:
             raise ValueError(f"Frage {qid} hat keine function_id in questions.json.")
         q_to_fid[qid] = fid
 
-    sums = {fid: 0.0 for fid in FUNCTIONS.keys()}
-    counts = {fid: 0 for fid in FUNCTIONS.keys()}
+    sums = {fid: 0.0 for fid in FUNCTION_NAMES.keys()}
+    counts = {fid: 0 for fid in FUNCTION_NAMES.keys()}
 
     for qid, val in answers.items():
         fid = q_to_fid.get(qid)
@@ -97,16 +83,18 @@ def build_report_data(answers: dict) -> ReportResult:
 
     avgs = {}
     percents = {}
-    for fid in FUNCTIONS.keys():
+    for fid in FUNCTION_NAMES.keys():
         c = counts[fid] if counts[fid] else 1
         avg = sums[fid] / c
         avgs[fid] = round(avg, 2)
         percents[fid] = int(round((avg / 10.0) * 100))
 
-    ranked = sorted([(fid, percents[fid]) for fid in FUNCTIONS.keys()],
-                    key=lambda x: x[1], reverse=True)
-
-    top_categories = [FUNCTIONS[fid] for fid, _ in ranked[:3]]
+    ranked = sorted(
+        [(fid, percents[fid]) for fid in FUNCTION_NAMES.keys()],
+        key=lambda x: x[1],
+        reverse=True
+    )
+    top_categories = [FUNCTION_NAMES[fid] for fid, _ in ranked[:3]]
     profile_type = decide_profile_type(percents)
 
     return ReportResult(
