@@ -323,7 +323,7 @@ CATEGORY_TEXT: Dict[str, Dict[str, Any]] = {
         ],
         "praxis": [
             "Zuständigkeit aufschreiben: Was ist mein Bereich – und was nicht? Ohne klare Abgrenzung bleibt Verantwortung schwammig.",
-            "Entscheidungsrahmen festlegen: Schreibe auf, welche Entscheidungen du ab sofort selbst triffst, ohne nachzufragen. Zum Beispiel: „Alles unter Betrag X entscheide ich allein."",
+            "Entscheidungsrahmen festlegen: Schreibe auf, welche Entscheidungen du ab sofort selbst triffst, ohne nachzufragen. Zum Beispiel: Alles unter Betrag X entscheide ich allein.",
             "Jeden Tag eine Sache abschließen: Nicht aufschieben, nicht parken. Eine offene Aufgabe bewusst zu Ende bringen – das trainiert Eigenverantwortung."
         ],
         "merksatz": "Einfluss ist kein Titel. Einfluss ist die Fähigkeit, Verantwortung zu übernehmen, bevor es jemand von dir verlangt.",
