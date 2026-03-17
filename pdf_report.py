@@ -58,35 +58,31 @@ def build_pdf_report(payload: Dict[str, Any]) -> bytes:
     S = _build_styles()
     story: List[Any] = []
 
-    # Seite 1: Einstieg
+    # Seite 1: Einstieg (mit Hinweis auf Kompaktauswertung am Ende)
     story.extend(_page_cover(name, email, S))
     story.append(PageBreak())
 
-    # Seite 2: KOMPAKTE ÜBERSICHT (One-Pager)
-    story.extend(_page_compact_overview(name, email, ptype, ranked, top3, bottom2, S))
-    story.append(PageBreak())
-
-    # Seite 3: Ergebnis-Snapshot (Typ + Top/Bottom)
-    story.extend(_page_result_snapshot(name, email, ptype, top3, bottom2, S))
-    story.append(PageBreak())
-
-    # Seite 4: Bar Chart
+    # Seite 2: Bar Chart Gesamtübersicht
     story.extend(_page_bar_overview(ranked, S))
     story.append(PageBreak())
 
-    # Seite 5: Meaning Cards
+    # Seite 3: Meaning Cards (Top-Hebel + Reibungszonen)
     story.extend(_page_meaning_cards(top3, bottom2, S))
     story.append(PageBreak())
 
-    # 11 Kategorien
+    # Seite 4-24: 11 Kategorien im Detail
     perc_map = {fid: pct for fid, pct in ranked}
     for fid in FUNCTION_ORDER:
         pct = int(round(perc_map.get(fid, 0)))
         story.extend(_page_category(fid, pct, S))
 
-    # Abschluss
+    # Actionplan
     story.append(PageBreak())
     story.extend(_page_actionplan(top3, bottom2, S))
+
+    # LETZTE SEITE: Kompaktauswertung (One-Pager)
+    story.append(PageBreak())
+    story.extend(_page_compact_overview(name, email, ptype, ranked, top3, bottom2, S))
 
     doc.build(story, onFirstPage=_header_footer, onLaterPages=_header_footer)
     return buf.getvalue()
@@ -184,7 +180,12 @@ def _page_cover(name, email, S):
         Spacer(1, 3),
         Paragraph("Wenn du denkst: <b>Verdammt - das bin genau ich</b> - dann funktioniert dieser Report. Wenn du Widerstand spürst - dann triffst du auf deine Reibung. Beides ist wertvoll. Beides ist steuerbar.", S["P"]),
     ], S))
-    story.append(Spacer(1, 16))
+    story.append(Spacer(1, 10))
+
+    story.append(_green_accent_card([
+        Paragraph("<b>Tipp: Auf der letzten Seite findest du deine Kompaktauswertung</b> - dein gesamtes Profil auf einer Seite. Zum Ausdrucken, an den Schreibtisch hängen und täglich nutzen.", S["Ps"]),
+    ], S))
+    story.append(Spacer(1, 12))
     story.append(Paragraph("Leistung ist kein Zufall. Sie entsteht dort, wo Klarheit, Steuerung und Verantwortung zusammenkommen.", S["Quote"]))
     return story
 
@@ -193,13 +194,13 @@ def _page_cover(name, email, S):
 # ============================================================
 def _page_compact_overview(name, email, ptype, ranked, top3, bottom2, S):
     story = []
-    story.append(Paragraph("DEIN PROFIL AUF EINEN BLICK", S["Label"]))
+    story.append(Paragraph("KOMPAKTAUSWERTUNG", S["Label"]))
     story.append(Spacer(1, 4))
-    story.append(Paragraph("Kompakt-Auswertung", S["H0"]))
+    story.append(Paragraph("Dein Profil auf einen Blick", S["H0"]))
     story.append(Spacer(1, 2))
     who = f"{name}  |  {email}" if email else name
-    story.append(Paragraph(_esc(who), S["Muted"]))
-    story.append(Spacer(1, 12))
+    story.append(Paragraph(_esc(who), S["MutedS"]))
+    story.append(Spacer(1, 8))
 
     # Typ-Box
     t = TYPE_MAP.get(ptype) or {"name": f"Typ {ptype}", "label": "-", "hint": "-"}
@@ -216,10 +217,10 @@ def _page_compact_overview(name, email, ptype, ranked, top3, bottom2, S):
     ]))
     story.append(_green_accent_card([
         typ_content,
-        Spacer(1, 2),
+        Spacer(1, 1),
         Paragraph(_esc(t.get('hint','')), S["MutedS"]),
     ], S))
-    story.append(Spacer(1, 10))
+    story.append(Spacer(1, 6))
 
     # Top 3 + Reibungszonen nebeneinander
     top_rows = []
@@ -268,11 +269,11 @@ def _page_compact_overview(name, email, ptype, ranked, top3, bottom2, S):
         ("BOTTOMPADDING",(0,0),(-1,-1),0),
     ]))
     story.append(grid)
-    story.append(Spacer(1, 10))
+    story.append(Spacer(1, 6))
 
     # Mini Bar Chart
     story.append(Paragraph("<b>Alle 11 Funktionen</b>", S["Ps"]))
-    story.append(Spacer(1, 4))
+    story.append(Spacer(1, 3))
     bar_rows = []
     for fid, pct in ranked:
         bar_rows.append([
@@ -290,11 +291,11 @@ def _page_compact_overview(name, email, ptype, ranked, top3, bottom2, S):
         ("BOTTOMPADDING",(0,0),(-1,-1),2),
     ]))
     story.append(bar_tbl)
-    story.append(Spacer(1, 10))
+    story.append(Spacer(1, 6))
 
     # Wichtigste Steuerungshinweise
     story.append(Paragraph("<b>Deine wichtigsten Steuerungsschritte</b>", S["Ps"]))
-    story.append(Spacer(1, 4))
+    story.append(Spacer(1, 3))
     steer_items = []
     for fid, pct in top3[:2]:
         card = MEANING_CARDS.get(fid, {})
