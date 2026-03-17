@@ -714,11 +714,12 @@ def _lines_to_para(lines, S):
 # CUSTOM FLOWABLES
 # ============================================================
 class GreenLine(Flowable):
-    def __init__(self, width_mm=170, thickness=2):
+    def __init__(self, width_mm=None, thickness=2):
         super().__init__()
-        self.width = width_mm * mm
+        self.fixed_width = (width_mm * mm) if width_mm else None
         self.thickness = thickness
     def wrap(self, aw, ah):
+        self.width = self.fixed_width if self.fixed_width else aw
         return self.width, self.thickness
     def draw(self):
         self.canv.saveState()
