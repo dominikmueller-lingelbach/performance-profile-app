@@ -1,89 +1,464 @@
 [
-  {"id":"q1","text":"Unter Druck bleibe ich ruhig und treffe klare Entscheidungen.","function_id":"DST","function_name":"Leistungsmodus unter Belastung"},
-  {"id":"q2","text":"Wenn es eng wird, werde ich fokussierter statt nervös.","function_id":"DST","function_name":"Leistungsmodus unter Belastung"},
-  {"id":"q3","text":"Ich bringe meine beste Leistung, wenn der Druck hoch ist.","function_id":"DST","function_name":"Leistungsmodus unter Belastung"},
-  {"id":"q4","text":"In entscheidenden Momenten kann ich meine Emotionen gezielt steuern.","function_id":"DST","function_name":"Leistungsmodus unter Belastung"},
-  {"id":"q5","text":"Stress macht mich wacher und steigert meine Leistung.","function_id":"DST","function_name":"Leistungsmodus unter Belastung"},
-  {"id":"q6","text":"Auch wenn der Druck steigt, ziehe ich meinen Plan durch.","function_id":"DST","function_name":"Leistungsmodus unter Belastung"},
-  {"id":"q7","text":"In Stresssituationen bleibe ich handlungsfähig statt blockiert.","function_id":"DST","function_name":"Leistungsmodus unter Belastung"},
-
-  {"id":"q8","text":"Ich brauche klare Regeln und Standards, um konstant Leistung zu liefern.","function_id":"STR","function_name":"Entscheidungsstabilität & Ordnung"},
-  {"id":"q9","text":"Ich plane bewusst voraus, statt mich auf (wird schon) zu verlassen.","function_id":"STR","function_name":"Entscheidungsstabilität & Ordnung"},
-  {"id":"q10","text":"Ohne Struktur verliere ich unnötig Leistung.","function_id":"STR","function_name":"Entscheidungsstabilität & Ordnung"},
-  {"id":"q11","text":"Ich arbeite mit festen Routinen, damit ich auch an schlechten Tagen liefere.","function_id":"STR","function_name":"Entscheidungsstabilität & Ordnung"},
-  {"id":"q12","text":"Chaotische oder unklare Abläufe kosten mich Leistung.","function_id":"STR","function_name":"Entscheidungsstabilität & Ordnung"},
-  {"id":"q13","text":"Ich arbeite lieber nach einem klaren System als nach Bauchgefühl.","function_id":"STR","function_name":"Entscheidungsstabilität & Ordnung"},
-  {"id":"q14","text":"Ohne klare Prioritäten verschwende ich Energie an den falschen Stellen.","function_id":"STR","function_name":"Entscheidungsstabilität & Ordnung"},
-
-  {"id":"q15","text":"Ich setze mir ehrgeizige Ziele und starte sofort mit der Umsetzung.","function_id":"AKT","function_name":"Energie- & Handlungsdynamik"},
-  {"id":"q16","text":"Ich bringe Dinge ins Rollen – auch ohne perfekten Plan.","function_id":"AKT","function_name":"Energie- & Handlungsdynamik"},
-  {"id":"q17","text":"Ich handle lieber, als zu lange zu diskutieren oder zu grübeln.","function_id":"AKT","function_name":"Energie- & Handlungsdynamik"},
-  {"id":"q18","text":"Ich erhöhe das Tempo, wenn andere zögern.","function_id":"AKT","function_name":"Energie- & Handlungsdynamik"},
-  {"id":"q19","text":"Ich treffe Entscheidungen lieber schnell und korrigiere unterwegs.","function_id":"AKT","function_name":"Energie- & Handlungsdynamik"},
-  {"id":"q20","text":"Ich bekomme Energie, wenn ich direkt ins Tun komme.","function_id":"AKT","function_name":"Energie- & Handlungsdynamik"},
-  {"id":"q21","text":"Ich warte nicht auf Erlaubnis, sondern lege los.","function_id":"AKT","function_name":"Energie- & Handlungsdynamik"},
-
-  {"id":"q22","text":"Ich will besser sein als andere – das bringt mich in meinen Leistungsmodus.","function_id":"COM","function_name":"Vergleichs- & Leistungsreferenz"},
-  {"id":"q23","text":"Ich brauche Wettkampf, Vergleich oder Messbarkeit, um volle Energie zu haben.","function_id":"COM","function_name":"Vergleichs- & Leistungsreferenz"},
-  {"id":"q24","text":"Ich will Top-Ergebnisse – Mittelmaß interessiert mich nicht.","function_id":"COM","function_name":"Vergleichs- & Leistungsreferenz"},
-  {"id":"q25","text":"Ich suche Herausforderungen, weil mich zu wenig Widerstand unterfordert.","function_id":"COM","function_name":"Vergleichs- & Leistungsreferenz"},
-  {"id":"q26","text":"Ich will in meiner Rolle zu den Besten gehören.","function_id":"COM","function_name":"Vergleichs- & Leistungsreferenz"},
-  {"id":"q27","text":"Ich werde besser, wenn ich mich mit starken Leuten messe.","function_id":"COM","function_name":"Vergleichs- & Leistungsreferenz"},
-  {"id":"q28","text":"Ich arbeite so lange an mir, bis das Ergebnis eindeutig top ist.","function_id":"COM","function_name":"Vergleichs- & Leistungsreferenz"},
-
-  {"id":"q29","text":"Ich übernehme Verantwortung, auch wenn es unbequem ist.","function_id":"MOR","function_name":"Werte-Stabilität & innere Entscheidungsgrenzen"},
-  {"id":"q30","text":"Ich halte meine Zusagen ein – auch wenn es mich etwas kostet.","function_id":"MOR","function_name":"Werte-Stabilität & innere Entscheidungsgrenzen"},
-  {"id":"q31","text":"Ich spiele fair, auch wenn ich dadurch kurzfristig Nachteile habe.","function_id":"MOR","function_name":"Werte-Stabilität & innere Entscheidungsgrenzen"},
-  {"id":"q32","text":"Ich sage klar Nein, wenn etwas nicht zu meinen Werten passt.","function_id":"MOR","function_name":"Werte-Stabilität & innere Entscheidungsgrenzen"},
-  {"id":"q33","text":"Ich stehe zu meinen Fehlern und trage die Konsequenzen.","function_id":"MOR","function_name":"Werte-Stabilität & innere Entscheidungsgrenzen"},
-  {"id":"q34","text":"Ich handle auch dann richtig, wenn niemand zuschaut.","function_id":"MOR","function_name":"Werte-Stabilität & innere Entscheidungsgrenzen"},
-  {"id":"q35","text":"Ich behandle Menschen respektvoll – auch wenn ich Leistung einfordere.","function_id":"MOR","function_name":"Werte-Stabilität & innere Entscheidungsgrenzen"},
-
-  {"id":"q36","text":"Ich will verstehen, warum etwas funktioniert – nicht nur, was ich tun soll.","function_id":"INF","function_name":"Verarbeitungs- & Entscheidungsmodus"},
-  {"id":"q37","text":"Ich informiere mich regelmäßig, um bei Entscheidungen einen Vorsprung zu haben.","function_id":"INF","function_name":"Verarbeitungs- & Entscheidungsmodus"},
-  {"id":"q38","text":"Ich lerne schnell, weil ich Wissen gezielt sammle und direkt anwende.","function_id":"INF","function_name":"Verarbeitungs- & Entscheidungsmodus"},
-  {"id":"q39","text":"Ich will Fakten, bevor ich entscheide.","function_id":"INF","function_name":"Verarbeitungs- & Entscheidungsmodus"},
-  {"id":"q40","text":"Ich will Ursachen verstehen, nicht nur Symptome bekämpfen.","function_id":"INF","function_name":"Verarbeitungs- & Entscheidungsmodus"},
-  {"id":"q41","text":"Ich brauche die richtigen Informationen, bevor ich eingreife oder korrigiere.","function_id":"INF","function_name":"Verarbeitungs- & Entscheidungsmodus"},
-  {"id":"q42","text":"Ich bilde mich ständig weiter, weil Wissen mir Sicherheit und Handlungsfähigkeit gibt.","function_id":"INF","function_name":"Verarbeitungs- & Entscheidungsmodus"},
-
-  {"id":"q43","text":"Ich suche aktiv den Austausch mit anderen, weil ich dadurch schneller besser werde.","function_id":"KON","function_name":"Soziale Steuerung & Anschlussfähigkeit"},
-  {"id":"q44","text":"Ich hole mir gezielt Feedback von Menschen, die ehrlich zu mir sind.","function_id":"KON","function_name":"Soziale Steuerung & Anschlussfähigkeit"},
-  {"id":"q45","text":"Ich finde schnell einen Draht zu Menschen und kann sie für mich gewinnen.","function_id":"KON","function_name":"Soziale Steuerung & Anschlussfähigkeit"},
-  {"id":"q46","text":"Ich fühle mich unwohl, wenn ich komplett alleine arbeite, ohne Austausch.","function_id":"KON","function_name":"Soziale Steuerung & Anschlussfähigkeit"},
-  {"id":"q47","text":"Ich kann Menschen durch meine Kommunikation gezielt beruhigen oder antreiben.","function_id":"KON","function_name":"Soziale Steuerung & Anschlussfähigkeit"},
-  {"id":"q48","text":"Ich finde schneller Lösungen, wenn Menschen zusammenarbeiten statt gegeneinander.","function_id":"KON","function_name":"Soziale Steuerung & Anschlussfähigkeit"},
-  {"id":"q49","text":"Ich nutze mein Netzwerk bewusst, um Chancen früher zu erkennen.","function_id":"KON","function_name":"Soziale Steuerung & Anschlussfähigkeit"},
-
-  {"id":"q50","text":"Ich brauche Freiraum, um Dinge auf meine Art umzusetzen.","function_id":"IND","function_name":"Autonomie- & Gestaltungsmodus"},
-  {"id":"q51","text":"Ich will Dinge entwickeln, die andere nicht einfach kopieren können.","function_id":"IND","function_name":"Autonomie- & Gestaltungsmodus"},
-  {"id":"q52","text":"Ich setze meine Persönlichkeit bewusst ein, um Wirkung zu erzeugen.","function_id":"IND","function_name":"Autonomie- & Gestaltungsmodus"},
-  {"id":"q53","text":"Ich mache Dinge lieber auf meine Weise als streng nach Vorgabe.","function_id":"IND","function_name":"Autonomie- & Gestaltungsmodus"},
-  {"id":"q54","text":"Ich brauche die Freiheit, eigene Lösungswege zu finden.","function_id":"IND","function_name":"Autonomie- & Gestaltungsmodus"},
-  {"id":"q55","text":"Ich will nicht austauschbar sein – ich will ein eigenes Profil haben.","function_id":"IND","function_name":"Autonomie- & Gestaltungsmodus"},
-  {"id":"q56","text":"Ich gehe meinen Weg, auch wenn andere ihn nicht nachvollziehen können.","function_id":"IND","function_name":"Autonomie- & Gestaltungsmodus"},
-
-  {"id":"q57","text":"Ich will Einfluss nehmen, statt nur auszuführen.","function_id":"MAC","function_name":"Verantwortungs- & Einflussorientierung"},
-  {"id":"q58","text":"Ich übernehme Führung, wenn niemand eine klare Richtung vorgibt.","function_id":"MAC","function_name":"Verantwortungs- & Einflussorientierung"},
-  {"id":"q59","text":"Ich halte Konflikte aus, wenn es um Leistung und Ergebnisse geht.","function_id":"MAC","function_name":"Verantwortungs- & Einflussorientierung"},
-  {"id":"q60","text":"Ich setze klare Grenzen und erwarte, dass andere sie einhalten.","function_id":"MAC","function_name":"Verantwortungs- & Einflussorientierung"},
-  {"id":"q61","text":"Ich übernehme die Verantwortung, wenn es sonst niemand tut.","function_id":"MAC","function_name":"Verantwortungs- & Einflussorientierung"},
-  {"id":"q62","text":"Ich will Entscheidungen treffen, statt nur Vorgaben umzusetzen.","function_id":"MAC","function_name":"Verantwortungs- & Einflussorientierung"},
-  {"id":"q63","text":"Ich kann andere klar führen, wenn das Ziel eindeutig ist.","function_id":"MAC","function_name":"Verantwortungs- & Einflussorientierung"},
-
-  {"id":"q64","text":"Ich will gesehen werden, wenn ich Leistung bringe.","function_id":"AUF","function_name":"Sichtbarkeits- & Feedbackabhängigkeit"},
-  {"id":"q65","text":"Ich fühle mich stärker, wenn Anerkennung direkt ausgesprochen wird.","function_id":"AUF","function_name":"Sichtbarkeits- & Feedbackabhängigkeit"},
-  {"id":"q66","text":"Ich präsentiere gerne, wenn ich etwas Wichtiges beizutragen habe.","function_id":"AUF","function_name":"Sichtbarkeits- & Feedbackabhängigkeit"},
-  {"id":"q67","text":"Wenn ich abliefere, will ich, dass das auch sichtbar wird.","function_id":"AUF","function_name":"Sichtbarkeits- & Feedbackabhängigkeit"},
-  {"id":"q68","text":"Ich spreche Themen offen an, statt mich zurückzuhalten.","function_id":"AUF","function_name":"Sichtbarkeits- & Feedbackabhängigkeit"},
-  {"id":"q69","text":"Anerkennung von anderen steigert meine Motivation spürbar.","function_id":"AUF","function_name":"Sichtbarkeits- & Feedbackabhängigkeit"},
-  {"id":"q70","text":"Ich setze meine Präsenz bewusst ein, um Menschen zu erreichen.","function_id":"AUF","function_name":"Sichtbarkeits- & Feedbackabhängigkeit"},
-
-  {"id":"q71","text":"Mir ist wichtig, dass mein Niveau und meine Position sichtbar sind.","function_id":"STA","function_name":"Positions- & Anerkennungsorientierung"},
-  {"id":"q72","text":"Ich will Ergebnisse liefern, die herausstechen – nicht Durchschnitt.","function_id":"STA","function_name":"Positions- & Anerkennungsorientierung"},
-  {"id":"q73","text":"Ich brauche ein Umfeld, das meinen Anspruch erkennt und wertschätzt.","function_id":"STA","function_name":"Positions- & Anerkennungsorientierung"},
-  {"id":"q74","text":"Ich will als Top-Performer wahrgenommen werden.","function_id":"STA","function_name":"Positions- & Anerkennungsorientierung"},
-  {"id":"q75","text":"Ich strebe nach einer Position, die Respekt verdient.","function_id":"STA","function_name":"Positions- & Anerkennungsorientierung"},
-  {"id":"q76","text":"Ein hoher Status zeigt mir: Ich bin auf dem richtigen Level.","function_id":"STA","function_name":"Positions- & Anerkennungsorientierung"},
-  {"id":"q77","text":"Ich will in einem Umfeld sein, das Spitzenleistung anerkennt und belohnt.","function_id":"STA","function_name":"Positions- & Anerkennungsorientierung"}
+  {
+    "id": "q1",
+    "text": "Ich brauche Freiraum, um Dinge auf meine Art umzusetzen.",
+    "function_id": "IND",
+    "function_name": "Autonomie- & Gestaltungsmodus"
+  },
+  {
+    "id": "q2",
+    "text": "Ich will besser sein als andere – das bringt mich in meinen Leistungsmodus.",
+    "function_id": "COM",
+    "function_name": "Vergleichs- & Leistungsreferenz"
+  },
+  {
+    "id": "q3",
+    "text": "Ich setze mir ehrgeizige Ziele und starte sofort mit der Umsetzung.",
+    "function_id": "AKT",
+    "function_name": "Energie- & Handlungsdynamik"
+  },
+  {
+    "id": "q4",
+    "text": "Ich will Einfluss nehmen, statt nur auszuführen.",
+    "function_id": "MAC",
+    "function_name": "Verantwortungs- & Einflussorientierung"
+  },
+  {
+    "id": "q5",
+    "text": "Ich will verstehen, warum etwas funktioniert – nicht nur, was ich tun soll.",
+    "function_id": "INF",
+    "function_name": "Verarbeitungs- & Entscheidungsmodus"
+  },
+  {
+    "id": "q6",
+    "text": "Ich suche aktiv den Austausch mit anderen, weil ich dadurch schneller besser werde.",
+    "function_id": "KON",
+    "function_name": "Soziale Steuerung & Anschlussfähigkeit"
+  },
+  {
+    "id": "q7",
+    "text": "Ich will gesehen werden, wenn ich Leistung bringe.",
+    "function_id": "AUF",
+    "function_name": "Sichtbarkeits- & Feedbackabhängigkeit"
+  },
+  {
+    "id": "q8",
+    "text": "Ich übernehme Verantwortung, auch wenn es unbequem ist.",
+    "function_id": "MOR",
+    "function_name": "Werte-Stabilität & innere Entscheidungsgrenzen"
+  },
+  {
+    "id": "q9",
+    "text": "Unter Druck bleibe ich ruhig und treffe klare Entscheidungen.",
+    "function_id": "DST",
+    "function_name": "Leistungsmodus unter Belastung"
+  },
+  {
+    "id": "q10",
+    "text": "Ich brauche klare Regeln und Standards, um konstant Leistung zu liefern.",
+    "function_id": "STR",
+    "function_name": "Entscheidungsstabilität & Ordnung"
+  },
+  {
+    "id": "q11",
+    "text": "Mir ist wichtig, dass mein Niveau und meine Position sichtbar sind.",
+    "function_id": "STA",
+    "function_name": "Positions- & Anerkennungsorientierung"
+  },
+  {
+    "id": "q12",
+    "text": "Ich halte meine Zusagen ein – auch wenn es mich etwas kostet.",
+    "function_id": "MOR",
+    "function_name": "Werte-Stabilität & innere Entscheidungsgrenzen"
+  },
+  {
+    "id": "q13",
+    "text": "Ich brauche Wettkampf, Vergleich oder Messbarkeit, um volle Energie zu haben.",
+    "function_id": "COM",
+    "function_name": "Vergleichs- & Leistungsreferenz"
+  },
+  {
+    "id": "q14",
+    "text": "Ich bringe Dinge ins Rollen – auch ohne perfekten Plan.",
+    "function_id": "AKT",
+    "function_name": "Energie- & Handlungsdynamik"
+  },
+  {
+    "id": "q15",
+    "text": "Ich will Ergebnisse liefern, die herausstechen – nicht Durchschnitt.",
+    "function_id": "STA",
+    "function_name": "Positions- & Anerkennungsorientierung"
+  },
+  {
+    "id": "q16",
+    "text": "Ich informiere mich regelmäßig, um bei Entscheidungen einen Vorsprung zu haben.",
+    "function_id": "INF",
+    "function_name": "Verarbeitungs- & Entscheidungsmodus"
+  },
+  {
+    "id": "q17",
+    "text": "Ich plane bewusst voraus, statt mich auf 'wird schon' zu verlassen.",
+    "function_id": "STR",
+    "function_name": "Entscheidungsstabilität & Ordnung"
+  },
+  {
+    "id": "q18",
+    "text": "Ich will Dinge entwickeln, die andere nicht einfach kopieren können.",
+    "function_id": "IND",
+    "function_name": "Autonomie- & Gestaltungsmodus"
+  },
+  {
+    "id": "q19",
+    "text": "Ich übernehme Führung, wenn niemand eine klare Richtung vorgibt.",
+    "function_id": "MAC",
+    "function_name": "Verantwortungs- & Einflussorientierung"
+  },
+  {
+    "id": "q20",
+    "text": "Wenn es eng wird, werde ich fokussierter statt nervös.",
+    "function_id": "DST",
+    "function_name": "Leistungsmodus unter Belastung"
+  },
+  {
+    "id": "q21",
+    "text": "Ich hole mir gezielt Feedback von Menschen, die ehrlich zu mir sind.",
+    "function_id": "KON",
+    "function_name": "Soziale Steuerung & Anschlussfähigkeit"
+  },
+  {
+    "id": "q22",
+    "text": "Ich fühle mich stärker, wenn Anerkennung direkt ausgesprochen wird.",
+    "function_id": "AUF",
+    "function_name": "Sichtbarkeits- & Feedbackabhängigkeit"
+  },
+  {
+    "id": "q23",
+    "text": "Ich lerne schnell, weil ich Wissen gezielt sammle und direkt anwende.",
+    "function_id": "INF",
+    "function_name": "Verarbeitungs- & Entscheidungsmodus"
+  },
+  {
+    "id": "q24",
+    "text": "Ohne Struktur verliere ich unnötig Leistung.",
+    "function_id": "STR",
+    "function_name": "Entscheidungsstabilität & Ordnung"
+  },
+  {
+    "id": "q25",
+    "text": "Ich präsentiere gerne, wenn ich etwas Wichtiges beizutragen habe.",
+    "function_id": "AUF",
+    "function_name": "Sichtbarkeits- & Feedbackabhängigkeit"
+  },
+  {
+    "id": "q26",
+    "text": "Ich bringe meine beste Leistung, wenn der Druck hoch ist.",
+    "function_id": "DST",
+    "function_name": "Leistungsmodus unter Belastung"
+  },
+  {
+    "id": "q27",
+    "text": "Ich handle lieber, als zu lange zu diskutieren oder zu grübeln.",
+    "function_id": "AKT",
+    "function_name": "Energie- & Handlungsdynamik"
+  },
+  {
+    "id": "q28",
+    "text": "Ich spiele fair, auch wenn ich dadurch kurzfristig Nachteile habe.",
+    "function_id": "MOR",
+    "function_name": "Werte-Stabilität & innere Entscheidungsgrenzen"
+  },
+  {
+    "id": "q29",
+    "text": "Ich setze meine Persönlichkeit bewusst ein, um Wirkung zu erzeugen.",
+    "function_id": "IND",
+    "function_name": "Autonomie- & Gestaltungsmodus"
+  },
+  {
+    "id": "q30",
+    "text": "Ich will Top-Ergebnisse – Mittelmaß interessiert mich nicht.",
+    "function_id": "COM",
+    "function_name": "Vergleichs- & Leistungsreferenz"
+  },
+  {
+    "id": "q31",
+    "text": "Ich finde schnell einen Draht zu Menschen und kann sie für mich gewinnen.",
+    "function_id": "KON",
+    "function_name": "Soziale Steuerung & Anschlussfähigkeit"
+  },
+  {
+    "id": "q32",
+    "text": "Ich halte Konflikte aus, wenn es um Leistung und Ergebnisse geht.",
+    "function_id": "MAC",
+    "function_name": "Verantwortungs- & Einflussorientierung"
+  },
+  {
+    "id": "q33",
+    "text": "Ich brauche ein Umfeld, das meinen Anspruch erkennt und wertschätzt.",
+    "function_id": "STA",
+    "function_name": "Positions- & Anerkennungsorientierung"
+  },
+  {
+    "id": "q34",
+    "text": "Ich mache Dinge lieber auf meine Weise als streng nach Vorgabe.",
+    "function_id": "IND",
+    "function_name": "Autonomie- & Gestaltungsmodus"
+  },
+  {
+    "id": "q35",
+    "text": "Ich will als Top-Performer wahrgenommen werden.",
+    "function_id": "STA",
+    "function_name": "Positions- & Anerkennungsorientierung"
+  },
+  {
+    "id": "q36",
+    "text": "Ich arbeite mit festen Routinen, damit ich auch an schlechten Tagen liefere.",
+    "function_id": "STR",
+    "function_name": "Entscheidungsstabilität & Ordnung"
+  },
+  {
+    "id": "q37",
+    "text": "Wenn ich abliefere, will ich, dass das auch sichtbar wird.",
+    "function_id": "AUF",
+    "function_name": "Sichtbarkeits- & Feedbackabhängigkeit"
+  },
+  {
+    "id": "q38",
+    "text": "In entscheidenden Momenten kann ich meine Emotionen gezielt steuern.",
+    "function_id": "DST",
+    "function_name": "Leistungsmodus unter Belastung"
+  },
+  {
+    "id": "q39",
+    "text": "Ich setze klare Grenzen und erwarte, dass andere sie einhalten.",
+    "function_id": "MAC",
+    "function_name": "Verantwortungs- & Einflussorientierung"
+  },
+  {
+    "id": "q40",
+    "text": "Ich fühle mich unwohl, wenn ich komplett alleine arbeite, ohne Austausch.",
+    "function_id": "KON",
+    "function_name": "Soziale Steuerung & Anschlussfähigkeit"
+  },
+  {
+    "id": "q41",
+    "text": "Ich suche Herausforderungen, weil mich zu wenig Widerstand unterfordert.",
+    "function_id": "COM",
+    "function_name": "Vergleichs- & Leistungsreferenz"
+  },
+  {
+    "id": "q42",
+    "text": "Ich erhöhe das Tempo, wenn andere zögern.",
+    "function_id": "AKT",
+    "function_name": "Energie- & Handlungsdynamik"
+  },
+  {
+    "id": "q43",
+    "text": "Ich sage klar Nein, wenn etwas nicht zu meinen Werten passt.",
+    "function_id": "MOR",
+    "function_name": "Werte-Stabilität & innere Entscheidungsgrenzen"
+  },
+  {
+    "id": "q44",
+    "text": "Ich will Fakten, bevor ich entscheide.",
+    "function_id": "INF",
+    "function_name": "Verarbeitungs- & Entscheidungsmodus"
+  },
+  {
+    "id": "q45",
+    "text": "Ich treffe Entscheidungen lieber schnell und korrigiere unterwegs.",
+    "function_id": "AKT",
+    "function_name": "Energie- & Handlungsdynamik"
+  },
+  {
+    "id": "q46",
+    "text": "Ich kann Menschen durch meine Kommunikation gezielt beruhigen oder antreiben.",
+    "function_id": "KON",
+    "function_name": "Soziale Steuerung & Anschlussfähigkeit"
+  },
+  {
+    "id": "q47",
+    "text": "Chaotische oder unklare Abläufe kosten mich Leistung.",
+    "function_id": "STR",
+    "function_name": "Entscheidungsstabilität & Ordnung"
+  },
+  {
+    "id": "q48",
+    "text": "Ich brauche die Freiheit, eigene Lösungswege zu finden.",
+    "function_id": "IND",
+    "function_name": "Autonomie- & Gestaltungsmodus"
+  },
+  {
+    "id": "q49",
+    "text": "Ich übernehme die Verantwortung, wenn es sonst niemand tut.",
+    "function_id": "MAC",
+    "function_name": "Verantwortungs- & Einflussorientierung"
+  },
+  {
+    "id": "q50",
+    "text": "Ich will in meiner Rolle zu den Besten gehören.",
+    "function_id": "COM",
+    "function_name": "Vergleichs- & Leistungsreferenz"
+  },
+  {
+    "id": "q51",
+    "text": "Ich spreche Themen offen an, statt mich zurückzuhalten.",
+    "function_id": "AUF",
+    "function_name": "Sichtbarkeits- & Feedbackabhängigkeit"
+  },
+  {
+    "id": "q52",
+    "text": "Stress macht mich wacher und steigert meine Leistung.",
+    "function_id": "DST",
+    "function_name": "Leistungsmodus unter Belastung"
+  },
+  {
+    "id": "q53",
+    "text": "Ich stehe zu meinen Fehlern und trage die Konsequenzen.",
+    "function_id": "MOR",
+    "function_name": "Werte-Stabilität & innere Entscheidungsgrenzen"
+  },
+  {
+    "id": "q54",
+    "text": "Ich strebe nach einer Position, die Respekt verdient.",
+    "function_id": "STA",
+    "function_name": "Positions- & Anerkennungsorientierung"
+  },
+  {
+    "id": "q55",
+    "text": "Ich will Ursachen verstehen, nicht nur Symptome bekämpfen.",
+    "function_id": "INF",
+    "function_name": "Verarbeitungs- & Entscheidungsmodus"
+  },
+  {
+    "id": "q56",
+    "text": "Ich bekomme Energie, wenn ich direkt ins Tun komme.",
+    "function_id": "AKT",
+    "function_name": "Energie- & Handlungsdynamik"
+  },
+  {
+    "id": "q57",
+    "text": "Anerkennung von anderen steigert meine Motivation spürbar.",
+    "function_id": "AUF",
+    "function_name": "Sichtbarkeits- & Feedbackabhängigkeit"
+  },
+  {
+    "id": "q58",
+    "text": "Ich will nicht austauschbar sein – ich will ein eigenes Profil haben.",
+    "function_id": "IND",
+    "function_name": "Autonomie- & Gestaltungsmodus"
+  },
+  {
+    "id": "q59",
+    "text": "Ich arbeite lieber nach einem klaren System als nach Bauchgefühl.",
+    "function_id": "STR",
+    "function_name": "Entscheidungsstabilität & Ordnung"
+  },
+  {
+    "id": "q60",
+    "text": "Ich finde schneller Lösungen, wenn Menschen zusammenarbeiten statt gegeneinander.",
+    "function_id": "KON",
+    "function_name": "Soziale Steuerung & Anschlussfähigkeit"
+  },
+  {
+    "id": "q61",
+    "text": "Auch wenn der Druck steigt, ziehe ich meinen Plan durch.",
+    "function_id": "DST",
+    "function_name": "Leistungsmodus unter Belastung"
+  },
+  {
+    "id": "q62",
+    "text": "Ein hoher Status zeigt mir: Ich bin auf dem richtigen Level.",
+    "function_id": "STA",
+    "function_name": "Positions- & Anerkennungsorientierung"
+  },
+  {
+    "id": "q63",
+    "text": "Ich werde besser, wenn ich mich mit starken Leuten messe.",
+    "function_id": "COM",
+    "function_name": "Vergleichs- & Leistungsreferenz"
+  },
+  {
+    "id": "q64",
+    "text": "Ich brauche die richtigen Informationen, bevor ich eingreife oder korrigiere.",
+    "function_id": "INF",
+    "function_name": "Verarbeitungs- & Entscheidungsmodus"
+  },
+  {
+    "id": "q65",
+    "text": "Ich handle auch dann richtig, wenn niemand zuschaut.",
+    "function_id": "MOR",
+    "function_name": "Werte-Stabilität & innere Entscheidungsgrenzen"
+  },
+  {
+    "id": "q66",
+    "text": "Ich will Entscheidungen treffen, statt nur Vorgaben umzusetzen.",
+    "function_id": "MAC",
+    "function_name": "Verantwortungs- & Einflussorientierung"
+  },
+  {
+    "id": "q67",
+    "text": "In Stresssituationen bleibe ich handlungsfähig statt blockiert.",
+    "function_id": "DST",
+    "function_name": "Leistungsmodus unter Belastung"
+  },
+  {
+    "id": "q68",
+    "text": "Ich gehe meinen Weg, auch wenn andere ihn nicht nachvollziehen können.",
+    "function_id": "IND",
+    "function_name": "Autonomie- & Gestaltungsmodus"
+  },
+  {
+    "id": "q69",
+    "text": "Ich kann andere klar führen, wenn das Ziel eindeutig ist.",
+    "function_id": "MAC",
+    "function_name": "Verantwortungs- & Einflussorientierung"
+  },
+  {
+    "id": "q70",
+    "text": "Ich setze meine Präsenz bewusst ein, um Menschen zu erreichen.",
+    "function_id": "AUF",
+    "function_name": "Sichtbarkeits- & Feedbackabhängigkeit"
+  },
+  {
+    "id": "q71",
+    "text": "Ich warte nicht auf Erlaubnis, sondern lege los.",
+    "function_id": "AKT",
+    "function_name": "Energie- & Handlungsdynamik"
+  },
+  {
+    "id": "q72",
+    "text": "Ich bilde mich ständig weiter, weil Wissen mir Sicherheit und Handlungsfähigkeit gibt.",
+    "function_id": "INF",
+    "function_name": "Verarbeitungs- & Entscheidungsmodus"
+  },
+  {
+    "id": "q73",
+    "text": "Ich will in einem Umfeld sein, das Spitzenleistung anerkennt und belohnt.",
+    "function_id": "STA",
+    "function_name": "Positions- & Anerkennungsorientierung"
+  },
+  {
+    "id": "q74",
+    "text": "Ich behandle Menschen respektvoll – auch wenn ich Leistung einfordere.",
+    "function_id": "MOR",
+    "function_name": "Werte-Stabilität & innere Entscheidungsgrenzen"
+  },
+  {
+    "id": "q75",
+    "text": "Ich nutze mein Netzwerk bewusst, um Chancen früher zu erkennen.",
+    "function_id": "KON",
+    "function_name": "Soziale Steuerung & Anschlussfähigkeit"
+  },
+  {
+    "id": "q76",
+    "text": "Ohne klare Prioritäten verschwende ich Energie an den falschen Stellen.",
+    "function_id": "STR",
+    "function_name": "Entscheidungsstabilität & Ordnung"
+  },
+  {
+    "id": "q77",
+    "text": "Ich arbeite so lange an mir, bis das Ergebnis eindeutig top ist.",
+    "function_id": "COM",
+    "function_name": "Vergleichs- & Leistungsreferenz"
+  }
 ]
