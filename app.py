@@ -76,6 +76,14 @@ async def show_result(request: Request, report_id: str):
         }
     )
 
+@app.get("/health")
+async def health():
+    try:
+        load_report("ping")
+        return JSONResponse({"ok": True, "db": "connected"})
+    except Exception as e:
+        return JSONResponse({"ok": False, "error": str(e)}, status_code=500)
+
 @app.post("/submit")
 async def submit(request: Request):
     payload = await request.json()
