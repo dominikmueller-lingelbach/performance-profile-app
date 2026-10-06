@@ -1,11 +1,13 @@
 from typing import List, Dict, Any
 from pathlib import Path
 import json
-from uuid import uuid4
+import re
+import hmac
+from uuid import uuid4, uuid5, NAMESPACE_URL
 import os
 import requests
 from fastapi import FastAPI, Request
-from fastapi.responses import HTMLResponse, JSONResponse, Response
+from fastapi.responses import HTMLResponse, JSONResponse, Response, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from report_builder import build_report_data
 from pdf_report import build_pdf_report
@@ -21,6 +23,21 @@ PUBLIC_BASE_URL = os.getenv(
     "PUBLIC_BASE_URL",
     "http://127.0.0.1:8000"
 ).rstrip("/")
+
+# ============================================================
+# ZUGANGSSCHUTZ
+# ACCESS_GATE=on  -> Test nur nach Kauf (Stripe) oder mit Zugangscode
+# ACCESS_GATE=off -> Test frei aufrufbar (Standard, bisheriges Verhalten)
+# ============================================================
+ACCESS_GATE = os.getenv("ACCESS_GATE", "off").strip().lower() in ("on", "1", "true", "yes")
+STRIPE_SECRET_KEY = (os.getenv("STRIPE_SECRET_KEY") or "").strip()
+ACCESS_CODES = [
+    c.strip().lower()
+    for c in (os.getenv("ACCESS_CODES") or "").split(",")
+    if c.strip()
+]
+BUY_URL = (os.getenv("BUY_URL") or "https://performanceprofil.de").strip()
+SESSION_RE = re.compile(r"^cs_(live|test)_[A-Za-z0-9]{10,200}$")
 
 # ============================================================
 # PATHS / APP
@@ -51,15 +68,154 @@ def load_questions() -> List[Dict[str, Any]]:
     with path.open("r", encoding="utf-8") as f:
         return json.load(f)
 
+
+def code_is_valid(code: str) -> bool:
+    c = (code or "").strip().lower()
+    if not c:
+        return False
+    return any(hmac.compare_digest(c.encode("utf-8"), k.encode("utf-8")) for k in ACCESS_CODES)
+
+
+def verify_stripe_session(session_id: str):
+    """
+    Prueft bei Stripe, ob der Kauf abgeschlossen ist.
+    Rueckgabe: ("ok", {"email": ..., "name": ...}) | ("invalid", None) | ("error", None)
+    """
+    sid = (session_id or "").strip()
+    if not SESSION_RE.match(sid):
+        return "invalid", None
+    if not STRIPE_SECRET_KEY:
+        print("STRIPE: kein STRIPE_SECRET_KEY gesetzt")
+        return "error", None
+    try:
+        r = requests.get(
+            "https://api.stripe.com/v1/checkout/sessions/" + sid,
+            headers={"Authorization": "Bearer " + STRIPE_SECRET_KEY},
+            timeout=10,
+        )
+    except Exception as e:
+        print("STRIPE exception:", repr(e))
+        return "error", None
+    if r.status_code == 404:
+        return "invalid", None
+    if r.status_code != 200:
+        # bewusst nur der Statuscode, keine Kundendaten ins Log
+        print("STRIPE status:", r.status_code)
+        return "error", None
+    s = r.json()
+    if s.get("status") != "complete":
+        return "invalid", None
+    if s.get("payment_status") not in ("paid", "no_payment_required"):
+        return "invalid", None
+    details = s.get("customer_details") or {}
+    email = (details.get("email") or s.get("customer_email") or "").strip()
+    name = (details.get("name") or "").strip()
+    return "ok", {"email": email, "name": name}
+
+
+def session_report_id(session_id: str) -> str:
+    # ein Kauf = genau ein Ergebnis: die Report-ID leitet sich fest aus dem Kauf ab
+    return str(uuid5(NAMESPACE_URL, "performance-profil-session:" + session_id.strip()))
+
+
+def resolve_access(session_id: str, code: str):
+    """
+    Rueckgabe: (state, access)
+    state: "open" (Schutz aus) | "ok" | "invalid" | "error"
+    """
+    if not ACCESS_GATE:
+        return "open", None
+    if (session_id or "").strip():
+        state, info = verify_stripe_session(session_id)
+        if state == "ok":
+            return "ok", {
+                "kind": "stripe",
+                "session_id": session_id.strip(),
+                "email": info["email"],
+                "name": info["name"],
+            }
+        if state == "error" and not code_is_valid(code):
+            return "error", None
+    if code_is_valid(code):
+        return "ok", {"kind": "code", "code": code.strip()}
+    return "invalid", None
+
+
+def locked_page(kind: str) -> str:
+    if kind == "error":
+        title = "Einen Moment bitte"
+        text = (
+            "Deine Zahlung konnte gerade nicht geprüft werden. "
+            "Bitte lade diese Seite in einer Minute neu. Dein Kauf bleibt gültig."
+        )
+        button = ""
+    else:
+        title = "Dein Zugang zum Performance Profil"
+        text = (
+            "Der Test öffnet sich direkt nach dem Kauf. "
+            "Du hast bereits gekauft? Dann nutze bitte den Link aus deinem Kauf "
+            "oder schreib an info@performanceprofil.de, dann bekommst du deinen Zugang erneut."
+        )
+        button = '<a class="btn" href="' + BUY_URL + '">Zum Performance Profil</a>'
+    return """<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>Performance Profil</title>
+  <style>
+    body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial;background:#0b0f14;color:#eaf0f6}
+    .wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;box-sizing:border-box}
+    .card{width:min(620px,100%);background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:18px;padding:30px;box-sizing:border-box}
+    .brand{font-weight:700;opacity:.9;margin-bottom:14px}
+    h1{font-size:26px;margin:0 0 12px}
+    p{opacity:.8;line-height:1.55;margin:0 0 22px}
+    .btn{display:inline-block;background:#22c55e;color:#05210f;font-weight:700;text-decoration:none;padding:14px 22px;border-radius:12px}
+    .foot{display:flex;gap:18px;flex-wrap:wrap;margin-top:26px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.10);font-size:12.5px;opacity:.75}
+    .foot a{color:#eaf0f6;text-decoration:underline}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card">
+    <div class="brand">Performance Profil</div>
+    <h1>""" + title + """</h1>
+    <p>""" + text + """</p>
+    """ + button + """
+    <div class="foot">
+      <a href="https://performanceprofil.de/impressum.html" target="_blank" rel="noopener">Impressum</a>
+      <a href="https://performanceprofil.de/datenschutz.html" target="_blank" rel="noopener">Datenschutz</a>
+    </div>
+  </div>
+</div>
+</body>
+</html>"""
+
 # ============================================================
 # ROUTES
 # ============================================================
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request):
+    state, access = resolve_access(
+        request.query_params.get("session_id", ""),
+        request.query_params.get("code", ""),
+    )
+    if state == "invalid":
+        return HTMLResponse(locked_page("invalid"), status_code=403)
+    if state == "error":
+        return HTMLResponse(locked_page("error"), status_code=503)
+
+    # Kauf wurde schon fuer einen Test genutzt -> direkt zum vorhandenen Ergebnis
+    if access and access["kind"] == "stripe":
+        existing_id = session_report_id(access["session_id"])
+        if load_report(existing_id):
+            return RedirectResponse("/r/" + existing_id, status_code=303)
+
     questions = load_questions()
     return templates.TemplateResponse(
         "index.html",
-        {"request": request, "questions": questions}
+        {"request": request, "questions": questions, "access": access}
     )
 
 @app.get("/r/{report_id}", response_class=HTMLResponse)
@@ -91,15 +247,44 @@ async def submit(request: Request):
     email = (payload.get("email") or "").strip()
     answers = payload.get("answers") or {}
 
+    # ================== ZUGANG PRUEFEN ==================
+    state, access = resolve_access(
+        str(payload.get("session_id") or ""),
+        str(payload.get("code") or ""),
+    )
+    if state == "invalid":
+        return JSONResponse(
+            {"ok": False, "error": "Kein gültiger Zugang. Bitte öffne den Test über den Link aus deinem Kauf."},
+            status_code=403
+        )
+    if state == "error":
+        return JSONResponse(
+            {"ok": False, "error": "Deine Zahlung konnte gerade nicht geprüft werden. Bitte versuche es in einer Minute erneut."},
+            status_code=503
+        )
+
     if not isinstance(answers, dict) or not answers:
         return JSONResponse(
             {"ok": False, "error": "Keine Antworten erhalten."},
             status_code=400
         )
 
+    report_id = str(uuid4())
+    if access and access["kind"] == "stripe":
+        # ein Kauf = ein Ergebnis; die E-Mail kommt fest aus dem Kauf
+        report_id = session_report_id(access["session_id"])
+        existing = load_report(report_id)
+        if existing:
+            return JSONResponse({
+                "ok": True,
+                "report_id": report_id,
+                "result_url": existing.get("result_url") or f"{PUBLIC_BASE_URL}/r/{report_id}"
+            })
+        if access["email"]:
+            email = access["email"]
+
     # ================== REPORT BERECHNEN ==================
     result = build_report_data(answers)
-    report_id = str(uuid4())
     result_url = f"{PUBLIC_BASE_URL}/r/{report_id}"
 
     # ================== REPORT SPEICHERN ==================
