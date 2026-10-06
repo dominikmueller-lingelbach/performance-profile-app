@@ -204,6 +204,26 @@ document.addEventListener("DOMContentLoaded", () => {
     const lastEl  = document.getElementById("last_name");
     const emailEl = document.getElementById("email");
 
+    // Zugang: bei Kauf kommen Name und E-Mail aus dem Bezahlvorgang
+    const ACCESS = {{ (access or none) | tojson }};
+    if (ACCESS && ACCESS.kind === "stripe") {
+      if (ACCESS.email && emailEl) {
+        emailEl.value = ACCESS.email;
+        emailEl.readOnly = true;
+        emailEl.style.opacity = "0.75";
+        emailEl.title = "Aus deinem Kauf übernommen";
+      }
+      if (ACCESS.name && firstEl && lastEl && !firstEl.value && !lastEl.value) {
+        const parts = ACCESS.name.trim().split(/\s+/);
+        if (parts.length > 1) {
+          lastEl.value = parts.pop();
+          firstEl.value = parts.join(" ");
+        } else {
+          firstEl.value = parts[0] || "";
+        }
+      }
+    }
+
     let step = 0;
 
     function show() {
@@ -276,6 +296,8 @@ document.addEventListener("DOMContentLoaded", () => {
           body: JSON.stringify({
             name: user.first + " " + user.last,
             email: user.email,
+            session_id: (ACCESS && ACCESS.session_id) || "",
+            code: (ACCESS && ACCESS.code) || "",
             answers: collectAnswers()
           })
         })
